@@ -8,18 +8,21 @@ def render() -> None:
     st.title("Analytics Dashboard")
 
     stats = get_dashboard_stats()
-    c1, c2, c3 = st.columns(3)
+    c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Scans", stats["total_scans"])
     c2.metric("Scam", stats["scam_count"])
-    c3.metric("Safe/Suspicious", stats["safe_count"])
+    c3.metric("Suspicious", stats["suspicious_count"])
+    c4.metric("Scam Rate", f"{stats['scam_rate']}%")
+
+    st.caption(f"Safe messages: {stats['safe_count']}")
 
     dist_df = pd.DataFrame(
         {
-            "label": ["scam", "safe_or_suspicious"],
-            "count": [stats["scam_count"], stats["safe_count"]],
+            "label": ["scam", "suspicious", "safe"],
+            "count": [stats["scam_count"], stats["suspicious_count"], stats["safe_count"]],
         }
     )
-    st.subheader("Scam vs Safe")
+    st.subheader("Label Distribution")
     st.bar_chart(dist_df.set_index("label"))
 
     st.subheader("Most Common Scam Keywords")

@@ -31,7 +31,7 @@ def _heuristic_probability(text: str) -> float:
 
 def _model_explanation(vectorizer: Any, model: Any, text: str, top_k: int = 5) -> list[str]:
     vec = vectorizer.transform([text])
-    feature_names = np.array(vectorizer.get_feature_names_out())
+    feature_names = vectorizer.get_feature_names_out().tolist()
     coef = model.coef_[0]
     present_indices = vec.nonzero()[1]
     if len(present_indices) == 0:

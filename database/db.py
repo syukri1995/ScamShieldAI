@@ -83,11 +83,22 @@ def fetch_history(limit: int = 200, db_path: str | Path | None = None) -> list[d
 def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
     with _connect(db_path) as conn:
         cursor = conn.execute(
-            "SELECT COUNT(*) AS total, SUM(CASE WHEN label = 'scam' THEN 1 ELSE 0 END) AS scam_count FROM scan_history"
+            """
+            SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN label = 'scam' THEN 1 ELSE 0 END) AS scam_count,
+                SUM(CASE WHEN label = 'suspicious' THEN 1 ELSE 0 END) AS suspicious_count,
+                SUM(CASE WHEN label = 'safe' THEN 1 ELSE 0 END) AS safe_count
+            FROM scan_history
+            """
         )
-        total, scam_count = cursor.fetchone()
+        total, scam_count, suspicious_count, safe_count = cursor.fetchone()
+        total = total or 0
         scam_count = scam_count or 0
-        safe_count = (total or 0) - scam_count
+        suspicious_count = suspicious_count or 0
+        safe_count = safe_count or 0
+
+    scam_rate = round((scam_count / total) * 100.0, 2) if total else 0.0
 
     keyword_counts: dict[str, int] = {}
     for item in fetch_history(limit=1000, db_path=db_path):
@@ -97,8 +108,10 @@ def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
     top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
 
     return {
-        "total_scans": total or 0,
+        "total_scans": total,
         "scam_count": scam_count,
+        "suspicious_count": suspicious_count,
         "safe_count": safe_count,
+        "scam_rate": scam_rate,
         "top_keywords": top_keywords,
     }
