@@ -15,8 +15,7 @@ def _connect(db_path: str | Path | None = None) -> sqlite3.Connection:
 
 def init_db(db_path: str | Path | None = None) -> None:
     with _connect(db_path) as conn:
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS scan_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 input_text TEXT NOT NULL,
@@ -26,8 +25,7 @@ def init_db(db_path: str | Path | None = None) -> None:
                 matched_keywords TEXT NOT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
-            """
-        )
+            """)
         conn.commit()
 
 
@@ -51,7 +49,9 @@ def insert_scan(
         conn.commit()
 
 
-def fetch_history(limit: int = 200, db_path: str | Path | None = None) -> list[dict[str, Any]]:
+def fetch_history(
+    limit: int = 200, db_path: str | Path | None = None
+) -> list[dict[str, Any]]:
     with _connect(db_path) as conn:
         cursor = conn.execute(
             """
@@ -82,16 +82,14 @@ def fetch_history(limit: int = 200, db_path: str | Path | None = None) -> list[d
 
 def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
     with _connect(db_path) as conn:
-        cursor = conn.execute(
-            """
+        cursor = conn.execute("""
             SELECT
                 COUNT(*) AS total,
                 SUM(CASE WHEN label = 'scam' THEN 1 ELSE 0 END) AS scam_count,
                 SUM(CASE WHEN label = 'suspicious' THEN 1 ELSE 0 END) AS suspicious_count,
                 SUM(CASE WHEN label = 'safe' THEN 1 ELSE 0 END) AS safe_count
             FROM scan_history
-            """
-        )
+            """)
         total, scam_count, suspicious_count, safe_count = cursor.fetchone()
         total = total or 0
         scam_count = scam_count or 0
