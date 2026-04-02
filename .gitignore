@@ -3,7 +3,4 @@ __pycache__/
 .venv/
 .env
 .pytest_cache/
-model/model.pkl
-model/vectorizer.pkl
 database/scamshield.db
-database/checkDB.ipynb
