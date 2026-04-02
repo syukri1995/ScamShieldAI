@@ -64,20 +64,18 @@ def fetch_history(
         )
         rows = cursor.fetchall()
 
-    history = []
-    for row in rows:
-        history.append(
-            {
-                "id": row[0],
-                "input_text": row[1],
-                "risk_score": row[2],
-                "label": row[3],
-                "explanation": row[4],
-                "matched_keywords": json.loads(row[5] or "[]"),
-                "created_at": row[6],
-            }
-        )
-    return history
+    return [
+        {
+            "id": row[0],
+            "input_text": row[1],
+            "risk_score": row[2],
+            "label": row[3],
+            "explanation": row[4],
+            "matched_keywords": json.loads(row[5] or "[]"),
+            "created_at": row[6],
+        }
+        for row in rows
+    ]
 
 
 def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
