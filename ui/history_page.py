@@ -17,7 +17,11 @@ def render() -> None:
     df["label"] = df["label"].astype(str)
     df["input_text"] = df["input_text"].astype(str)
 
-    search_query = st.text_input("Search message text", placeholder="e.g. verify account, lottery")
+    search_query = st.text_input(
+        "Search message text",
+        placeholder="e.g. verify account, lottery",
+        help="Search for specific keywords within the analyzed messages.",
+    )
 
     min_score, max_score = st.slider(
         "Risk score range",
@@ -25,6 +29,7 @@ def render() -> None:
         max_value=100,
         value=(0, 100),
         step=1,
+        help="0 is completely safe, 100 is highly suspicious.",
     )
 
     label_options = sorted([str(x) for x in df["label"].unique()])
@@ -32,19 +37,29 @@ def render() -> None:
         "Filter by label",
         options=label_options,
         default=label_options,
+        help="Select the categories of scans you want to view.",
     )
 
     filtered = df[df["label"].isin(label_filter)].copy()
-    filtered = filtered[(filtered["risk_score"] >= min_score) & (filtered["risk_score"] <= max_score)]
+    filtered = filtered[
+        (filtered["risk_score"] >= min_score) & (filtered["risk_score"] <= max_score)
+    ]
 
     if search_query.strip():
-        filtered = filtered[filtered["input_text"].str.contains(search_query.strip(), case=False, na=False, regex=False)]
+        filtered = filtered[
+            filtered["input_text"].str.contains(
+                search_query.strip(), case=False, na=False
+            )
+        ]
 
     filtered["input_preview"] = filtered["input_text"].str.slice(0, 100)
 
     c1, c2 = st.columns(2)
     c1.metric("Filtered Rows", len(filtered))
-    c2.metric("Avg Risk", round(float(filtered["risk_score"].mean()), 2) if not filtered.empty else 0.0)
+    c2.metric(
+        "Avg Risk",
+        round(float(filtered["risk_score"].mean()), 2) if not filtered.empty else 0.0,
+    )
 
     st.dataframe(
         filtered[["created_at", "label", "risk_score", "input_preview", "explanation"]],

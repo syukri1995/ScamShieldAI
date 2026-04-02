@@ -19,7 +19,11 @@ def render() -> None:
     dist_df = pd.DataFrame(
         {
             "label": ["scam", "suspicious", "safe"],
-            "count": [stats["scam_count"], stats["suspicious_count"], stats["safe_count"]],
+            "count": [
+                stats["scam_count"],
+                stats["suspicious_count"],
+                stats["safe_count"],
+            ],
         }
     )
     st.subheader("Label Distribution")
