@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 import joblib
 import pandas as pd
@@ -40,7 +40,11 @@ def load_phishing_dataset(path: Path, sample_size: int) -> pd.DataFrame:
     if sample_size > 0 and len(df) > sample_size:
         df = (
             df.groupby("label", group_keys=False)
-            .apply(lambda g: g.sample(n=max(1, int(sample_size * len(g) / len(df))), random_state=42))
+            .apply(
+                lambda g: g.sample(
+                    n=max(1, int(sample_size * len(g) / len(df))), random_state=42
+                )
+            )
             .reset_index(drop=True)
         )
 

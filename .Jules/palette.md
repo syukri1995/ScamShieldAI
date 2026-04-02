@@ -1,0 +1,3 @@
+## 2026-04-02 - Streamlit Tooltips as Accessible Alternatives
+**Learning:** When working with Streamlit apps, standard HTML UX enhancements like direct aria-label attributes aren't easily injectable without raw HTML blocks or custom components. However, Streamlit provides native 'help' parameters on almost all input widgets. This acts as a native tooltip, giving essential context without cluttering the UI, acting as a functional micro-UX improvement within the framework's constraints.
+**Action:** For Streamlit projects, rely on native keyword arguments like 'help' and 'placeholder' to improve form clarity and input guidance, rather than trying to force traditional HTML/React accessibility patterns.

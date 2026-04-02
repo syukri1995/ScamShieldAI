@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-import numpy as np
 
 from model.rules import apply_rules
 
@@ -29,7 +28,9 @@ def _heuristic_probability(text: str) -> float:
     return min(0.1 + score * 0.15, 0.95)
 
 
-def _model_explanation(vectorizer: Any, model: Any, text: str, top_k: int = 5) -> list[str]:
+def _model_explanation(
+    vectorizer: Any, model: Any, text: str, top_k: int = 5
+) -> list[str]:
     vec = vectorizer.transform([text])
     feature_names = vectorizer.get_feature_names_out().tolist()
     coef = model.coef_[0]
@@ -70,7 +71,9 @@ def predict_text(text: str) -> dict[str, Any]:
     reasons.extend(rules["rule_reasons"])
 
     if not reasons:
-        reasons.append("No strong scam indicators were detected by the current model and rules.")
+        reasons.append(
+            "No strong scam indicators were detected by the current model and rules."
+        )
 
     merged_keywords = sorted(set(model_terms + rules["matched_keywords"]))
 

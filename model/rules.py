@@ -46,7 +46,9 @@ def apply_rules(text: str) -> dict:
 
     reasons = []
     if matched_keywords:
-        reasons.append(f"Suspicious keywords detected: {', '.join(matched_keywords[:6])}")
+        reasons.append(
+            f"Suspicious keywords detected: {', '.join(matched_keywords[:6])}"
+        )
     if url_flags:
         reasons.append(f"URL warning signals: {', '.join(sorted(set(url_flags)))}")
 

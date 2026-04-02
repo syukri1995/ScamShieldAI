@@ -22,6 +22,7 @@ def render() -> None:
         key=input_key,
         placeholder="Paste message/email/URL here...",
         height=180,
+        help="Paste the full body of a suspicious email, text message, or a questionable URL to get a comprehensive risk analysis.",
     )
 
     if st.button("Analyze", type="primary", use_container_width=True):
