@@ -38,7 +38,7 @@ def render() -> None:
     filtered = filtered[(filtered["risk_score"] >= min_score) & (filtered["risk_score"] <= max_score)]
 
     if search_query.strip():
-        filtered = filtered[filtered["input_text"].str.contains(search_query.strip(), case=False, na=False)]
+        filtered = filtered[filtered["input_text"].str.contains(search_query.strip(), case=False, na=False, regex=False)]
 
     filtered["input_preview"] = filtered["input_text"].str.slice(0, 100)
 
