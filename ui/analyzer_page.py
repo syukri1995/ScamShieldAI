@@ -62,13 +62,6 @@ def render() -> None:
     if error_key not in st.session_state:
         st.session_state[error_key] = ""
 
-    # Optional helper sample for quick testing of the analyzer pipeline.
-    with st.expander("Try a quick sample", expanded=False):
-        if st.button("Load phishing-like sample", use_container_width=True):
-            st.session_state[input_key] = (
-                "Urgent: Your bank account is suspended. Verify now at http://bit.ly/reset-now"
-            )
-
     result = st.session_state[result_key]
     latest_message = st.session_state[message_key]
     time_label = datetime.now().strftime("%I:%M %p").lstrip("0")
@@ -168,8 +161,7 @@ def render() -> None:
             )
 
     with right_col:
-        st.markdown('<div class="ss-side-panel">', unsafe_allow_html=True)
-        st.markdown('<h3 class="ss-side-title">Analysis Details</h3>', unsafe_allow_html=True)
+        st.subheader("Analysis Details")
 
         if result:
             st.metric("Risk Score", f"{result['risk_score']:.2f}%")
@@ -195,7 +187,6 @@ def render() -> None:
             '<p class="ss-side-note">This panel is optimized for desktop while the smartphone panel mirrors your intended end-user chat experience.</p>',
             unsafe_allow_html=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
 
     if send_clicked:
         try:
