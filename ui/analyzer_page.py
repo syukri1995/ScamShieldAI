@@ -1,9 +1,11 @@
 from datetime import datetime
 import html
+import json
 from pathlib import Path
 import streamlit as st
 
 from services.analyzer_service import analyze_and_store
+from database.db import fetch_random_history
 
 
 def _inject_styles() -> None:
@@ -152,6 +154,112 @@ def render() -> None:
                     label_visibility="collapsed",
                     placeholder="Enter your message...",
                 )
+
+                # Fetch random history and generate Javascript for dropdown overlay
+                history_items = fetch_random_history(limit=4)
+
+                # We need to escape the texts properly for javascript string literal inclusion
+                js_array = json.dumps(history_items).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+
+                dropdown_js = f"""
+                <script>
+                (function() {{
+                    const suggestions = {js_array};
+                    if (!suggestions || suggestions.length === 0) return;
+
+                    function setupDropdown() {{
+                        // We are inside an iframe (Streamlit HTML component)
+                        // Streamlit app DOM is in the parent window
+                        const parentDoc = window.parent.document;
+                        const inputEl = parentDoc.querySelector('input[aria-label="Enter your message"]');
+
+                        if (!inputEl) {{
+                            setTimeout(setupDropdown, 200);
+                            return;
+                        }}
+
+                        // Prevent adding multiple times
+                        if (inputEl.dataset.dropdownInjected) return;
+                        inputEl.dataset.dropdownInjected = 'true';
+
+                        // Ensure parent has relative positioning so our absolute div stays near
+                        const inputContainer = inputEl.closest('div[data-baseweb="input"]').parentNode;
+                        if(inputContainer) {{
+                            inputContainer.style.position = 'relative';
+                        }}
+
+                        const dropdown = parentDoc.createElement('div');
+                        dropdown.style.cssText = `
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background-color: rgba(255, 255, 255, 0.92);
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                            z-index: 9999;
+                            margin-top: 4px;
+                            display: none;
+                            backdrop-filter: blur(4px);
+                            overflow: hidden;
+                        `;
+
+                        suggestions.forEach((text, index) => {{
+                            const item = parentDoc.createElement('div');
+                            // Truncate long texts
+                            const displayText = text.length > 50 ? text.substring(0, 47) + '...' : text;
+                            item.textContent = displayText;
+                            item.style.cssText = `
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                color: #374151;
+                                border-bottom: ${{index < suggestions.length - 1 ? '1px solid #f3f4f6' : 'none'}};
+                                transition: background-color 0.1s;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            `;
+
+                            item.onmouseover = () => item.style.backgroundColor = 'rgba(243, 244, 246, 0.9)';
+                            item.onmouseout = () => item.style.backgroundColor = 'transparent';
+
+                            item.onmousedown = (e) => {{
+                                // Use mousedown instead of click to fire before input blur event
+                                e.preventDefault();
+
+                                // React uses a setter to detect input changes, just setting .value isn't enough
+                                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                                nativeInputValueSetter.call(inputEl, text);
+
+                                const ev = new Event('input', {{ bubbles: true }});
+                                inputEl.dispatchEvent(ev);
+
+                                dropdown.style.display = 'none';
+                            }};
+                            dropdown.appendChild(item);
+                        }});
+
+                        if (inputContainer) {{
+                            inputContainer.appendChild(dropdown);
+                        }}
+
+                        inputEl.addEventListener('focus', () => {{
+                            dropdown.style.display = 'block';
+                        }});
+
+                        inputEl.addEventListener('blur', () => {{
+                            dropdown.style.display = 'none';
+                        }});
+                    }}
+
+                    setupDropdown();
+                }})();
+                </script>
+                """
+                st.components.v1.html(dropdown_js, height=0)
+
             with send_col:
                 send_clicked = st.form_submit_button("Send", use_container_width=True)
 
