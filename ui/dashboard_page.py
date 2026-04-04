@@ -5,9 +5,11 @@ from services.stats_service import get_dashboard_stats
 
 
 def render() -> None:
+    # Dashboard overview with key scan metrics and trends.
     st.title("Analytics Dashboard")
 
     stats = get_dashboard_stats()
+    # KPI cards for quick status visibility.
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Scans", stats["total_scans"])
     c2.metric("Scam", stats["scam_count"])
@@ -26,11 +28,13 @@ def render() -> None:
             ],
         }
     )
+    # Distribution chart by predicted label.
     st.subheader("Label Distribution")
     st.bar_chart(dist_df.set_index("label"))
 
     st.subheader("Most Common Scam Keywords")
     if stats["top_keywords"]:
+        # Plot top extracted scam-indicator keywords.
         kw_df = pd.DataFrame(stats["top_keywords"], columns=["keyword", "count"])
         st.bar_chart(kw_df.set_index("keyword"))
     else:

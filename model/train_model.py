@@ -17,6 +17,7 @@ VECTORIZER_PATH = BASE_DIR / "vectorizer.pkl"
 
 
 def load_sms_dataset(path: Path) -> pd.DataFrame:
+    # Normalize SMS labels to binary target expected by the classifier.
     if not path.exists():
         raise FileNotFoundError(f"Missing SMS dataset: {path}")
     df = pd.read_csv(path, sep="\t", header=None, names=["raw_label", "text"])
@@ -27,6 +28,7 @@ def load_sms_dataset(path: Path) -> pd.DataFrame:
 
 
 def load_phishing_dataset(path: Path, sample_size: int) -> pd.DataFrame:
+    # Load URL-based phishing dataset and keep only valid binary labels.
     if not path.exists():
         raise FileNotFoundError(f"Missing phishing dataset: {path}")
 
@@ -52,6 +54,7 @@ def load_phishing_dataset(path: Path, sample_size: int) -> pd.DataFrame:
 
 
 def load_combined_dataset() -> pd.DataFrame:
+    # Merge SMS + phishing data into one training frame.
     phishing_sample_size = int(os.getenv("PHISHING_SAMPLE_SIZE", "120000"))
     sms_df = load_sms_dataset(SMS_RAW_PATH)
     phishing_df = load_phishing_dataset(PHISHING_RAW_PATH, phishing_sample_size)
@@ -62,6 +65,7 @@ def load_combined_dataset() -> pd.DataFrame:
 
 
 def train() -> None:
+    # Train a TF-IDF + Logistic Regression baseline spam/phishing detector.
     df = load_combined_dataset()
     print(f"Training rows: {len(df)}")
     print(df["label"].value_counts().to_string())
@@ -81,6 +85,7 @@ def train() -> None:
     model = LogisticRegression(max_iter=400, class_weight="balanced")
     model.fit(x_train_vec, y_train)
 
+    # Print evaluation summary and persist artifacts for inference.
     y_pred = model.predict(x_test_vec)
     print(classification_report(y_test, y_pred, digits=3))
 

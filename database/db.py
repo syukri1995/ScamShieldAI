@@ -8,12 +8,14 @@ DEFAULT_DB_PATH = BASE_DIR / "scamshield.db"
 
 
 def _connect(db_path: str | Path | None = None) -> sqlite3.Connection:
+    # Resolve db location and create parent directory on first run.
     path = Path(db_path) if db_path else DEFAULT_DB_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(path)
 
 
 def init_db(db_path: str | Path | None = None) -> None:
+    # Create the scan history table if it does not already exist.
     with _connect(db_path) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS scan_history (
@@ -37,6 +39,7 @@ def insert_scan(
     matched_keywords: list[str],
     db_path: str | Path | None = None,
 ) -> None:
+    # Store matched keywords as JSON text for simple SQLite persistence.
     payload = json.dumps(matched_keywords)
     with _connect(db_path) as conn:
         conn.execute(
@@ -52,6 +55,7 @@ def insert_scan(
 def fetch_history(
     limit: int = 200, db_path: str | Path | None = None
 ) -> list[dict[str, Any]]:
+    # Return newest scans first so recent analysis appears at the top in UI.
     with _connect(db_path) as conn:
         cursor = conn.execute(
             """
@@ -79,6 +83,7 @@ def fetch_history(
 
 
 def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
+    # Aggregate key counts for dashboard cards.
     with _connect(db_path) as conn:
         cursor = conn.execute("""
             SELECT
@@ -96,6 +101,7 @@ def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
 
     scam_rate = round((scam_count / total) * 100.0, 2) if total else 0.0
 
+    # Build a frequency map from recent keyword matches.
     keyword_counts: dict[str, int] = {}
     for item in fetch_history(limit=1000, db_path=db_path):
         for kw in item["matched_keywords"]:

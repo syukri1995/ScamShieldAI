@@ -5,6 +5,7 @@ from services.stats_service import get_scan_history
 
 
 def render() -> None:
+    # History browser for previously analyzed messages.
     st.title("Scan History")
 
     history = get_scan_history(limit=500)
@@ -12,11 +13,13 @@ def render() -> None:
         st.info("No scans yet. Analyze content first.")
         return
 
+    # Normalize key fields for robust filtering and display.
     df = pd.DataFrame(history)
     df["created_at"] = pd.to_datetime(df["created_at"], errors="coerce")
     df["label"] = df["label"].astype(str)
     df["input_text"] = df["input_text"].astype(str)
 
+    # Text, score, and label filters.
     search_query = st.text_input(
         "Search message text",
         placeholder="e.g. verify account, lottery",
@@ -40,6 +43,7 @@ def render() -> None:
         help="Select the categories of scans you want to view.",
     )
 
+    # Apply selected filters to a working dataframe copy.
     filtered = df[df["label"].isin(label_filter)].copy()
     filtered = filtered[
         (filtered["risk_score"] >= min_score) & (filtered["risk_score"] <= max_score)
@@ -52,8 +56,10 @@ def render() -> None:
             )
         ]
 
+    # Show shortened preview to keep table compact.
     filtered["input_preview"] = filtered["input_text"].str.slice(0, 100)
 
+    # Quick summary for currently filtered set.
     c1, c2 = st.columns(2)
     c1.metric("Filtered Rows", len(filtered))
     c2.metric(

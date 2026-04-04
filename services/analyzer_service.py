@@ -8,10 +8,12 @@ from model.predict import predict_text
 def analyze_and_store(
     input_text: str, db_path: str | Path | None = None
 ) -> dict[str, Any]:
+    # Trim user input and reject empty submissions early.
     text = (input_text or "").strip()
     if not text:
         raise ValueError("Input text cannot be empty.")
 
+    # Run prediction and persist the resulting scan record.
     result = predict_text(text)
     insert_scan(
         input_text=text,

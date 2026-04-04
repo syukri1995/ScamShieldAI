@@ -13,6 +13,7 @@ VECTORIZER_PATH = MODEL_DIR / "vectorizer.pkl"
 
 
 def _load_artifacts():
+    # Load persisted model assets if training has been completed.
     if MODEL_PATH.exists() and VECTORIZER_PATH.exists():
         model = joblib.load(MODEL_PATH)
         vectorizer = joblib.load(VECTORIZER_PATH)
@@ -31,6 +32,7 @@ def _heuristic_probability(text: str) -> float:
 def _model_explanation(
     vectorizer: Any, model: Any, text: str, top_k: int = 5
 ) -> list[str]:
+    # Rank present terms by positive model weight contribution.
     vec = vectorizer.transform([text])
     feature_names = vectorizer.get_feature_names_out().tolist()
     coef = model.coef_[0]
@@ -44,6 +46,7 @@ def _model_explanation(
 
 
 def predict_text(text: str) -> dict[str, Any]:
+    # Prefer ML inference and fall back to heuristics if artifacts are missing.
     model, vectorizer = _load_artifacts()
 
     if model is not None and vectorizer is not None:
@@ -55,6 +58,7 @@ def predict_text(text: str) -> dict[str, Any]:
         model_terms = []
 
     model_score = model_prob * 100.0
+    # Blend model score with deterministic rule-based signals.
     rules = apply_rules(text)
     final_score = max(0.0, min(100.0, model_score + rules["score_boost"]))
 
@@ -77,6 +81,7 @@ def predict_text(text: str) -> dict[str, Any]:
 
     merged_keywords = sorted(set(model_terms + rules["matched_keywords"]))
 
+    # Return UI-ready payload with normalized score and explanation.
     return {
         "risk_score": round(final_score, 2),
         "label": label,

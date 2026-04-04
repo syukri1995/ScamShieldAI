@@ -5,6 +5,7 @@ from services.analyzer_service import analyze_and_store
 
 
 def test_analyze_and_store(tmp_path: Path):
+    # End-to-end check: analyze input and persist exactly one history record.
     db_path = tmp_path / "service.db"
     init_db(db_path)
 
@@ -16,6 +17,7 @@ def test_analyze_and_store(tmp_path: Path):
 
 
 def test_analyze_rejects_empty(tmp_path: Path):
+    # Empty input should fail fast with ValueError.
     db_path = tmp_path / "service2.db"
     init_db(db_path)
 

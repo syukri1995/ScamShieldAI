@@ -24,10 +24,12 @@ SUSPICIOUS_TLDS = (".xyz", ".top", ".work", ".click", ".info")
 
 
 def detect_urls(text: str) -> list[str]:
+    # Capture common URL formats found in message text.
     return re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
 
 
 def apply_rules(text: str) -> dict:
+    # Collect keyword and URL based warning signals.
     lowered = text.lower()
     matched_keywords = sorted([kw for kw in SUSPICIOUS_KEYWORDS if kw in lowered])
 
@@ -41,6 +43,7 @@ def apply_rules(text: str) -> dict:
             url_flags.append("suspicious_tld")
 
     boost = 0.0
+    # Cap each signal family so scores stay bounded and interpretable.
     boost += min(len(matched_keywords) * 4.0, 20.0)
     boost += min(len(set(url_flags)) * 6.0, 18.0)
 
@@ -52,6 +55,7 @@ def apply_rules(text: str) -> dict:
     if url_flags:
         reasons.append(f"URL warning signals: {', '.join(sorted(set(url_flags)))}")
 
+    # Return additive boost, matched terms, and human-readable reasons.
     return {
         "score_boost": boost,
         "matched_keywords": matched_keywords,
