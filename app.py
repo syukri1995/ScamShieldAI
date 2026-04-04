@@ -8,7 +8,7 @@ st.set_page_config(page_title="ScamShield AI", page_icon="🛡", layout="wide")
 init_db()
 
 # Simple sidebar router to switch between app pages.
-st.sidebar.title("ScamShield AI")
+st.sidebar.title("SmartScam AI")
 page = st.sidebar.radio("Navigate", ["Analyzer", "History", "Dashboard"])
 
 if page == "Analyzer":
