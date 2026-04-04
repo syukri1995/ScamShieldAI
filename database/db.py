@@ -52,6 +52,25 @@ def insert_scan(
         conn.commit()
 
 
+def fetch_random_history(
+    limit: int = 5, db_path: str | Path | None = None
+) -> list[str]:
+    # Fetch random previously analyzed inputs for suggestions
+    with _connect(db_path) as conn:
+        cursor = conn.execute(
+            """
+            SELECT input_text
+            FROM scan_history
+            ORDER BY RANDOM()
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = cursor.fetchall()
+
+    return [row[0] for row in rows]
+
+
 def fetch_history(
     limit: int = 200, db_path: str | Path | None = None
 ) -> list[dict[str, Any]]:
