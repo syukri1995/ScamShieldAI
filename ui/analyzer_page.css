@@ -1,0 +1,277 @@
+.ss-phone-wrap {
+    width: min(430px, 100%);
+    max-width: 430px;
+    margin: 0;
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+.ss-phone-frame {
+    border: 6px solid #182033;
+    border-radius: 36px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    box-shadow: 0 16px 48px rgba(15, 23, 42, 0.22);
+    height: clamp(680px, 84vh, 800px);
+    display: flex;
+    flex-direction: column;
+}
+.ss-top-notch {
+    width: 120px;
+    height: 16px;
+    margin: 10px auto 6px auto;
+    border-radius: 999px;
+    background: #0f172a;
+}
+.ss-header {
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #dbe2ea;
+    padding: 12px 16px;
+    text-align: center;
+}
+.ss-header-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+}
+.ss-header-sub {
+    margin-top: 2px;
+    font-size: 13px;
+    color: #475569;
+}
+.ss-content {
+    padding: 14px;
+    min-height: 0;
+    flex: 1 1 auto;
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent;
+}
+.ss-content::-webkit-scrollbar {
+    width: 8px;
+}
+.ss-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.ss-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.ss-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+    background-clip: content-box;
+}
+.ss-risk-card {
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    margin-bottom: 14px;
+}
+.ss-risk-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+.ss-risk-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #b91c1c;
+}
+.ss-risk-score {
+    font-size: 34px;
+    font-weight: 800;
+    color: #b91c1c;
+    line-height: 1;
+}
+.ss-risk-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #7f1d1d;
+    text-transform: uppercase;
+}
+.ss-risk-text {
+    font-size: 14px;
+    color: #334155;
+    margin: 8px 0 10px 0;
+    line-height: 1.42;
+}
+.ss-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.ss-chip {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 8px;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    background: #ffe4e6;
+    padding: 4px 8px;
+}
+.ss-meta {
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 12px 0;
+    font-weight: 700;
+}
+.ss-from {
+    margin: 4px 0 6px 2px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 700;
+}
+.ss-thread {
+    width: 100%;
+    max-width: 100%;
+}
+.ss-msg {
+    margin-right: 22px;
+    background: #e2e8f0;
+    color: #0f172a;
+    border-radius: 16px;
+    padding: 12px 14px;
+    font-size: 18px;
+    line-height: 1.45;
+    box-shadow: inset 0 0 0 1px #dbe1ea;
+    overflow-wrap: anywhere;
+}
+.ss-alert {
+    margin-top: 14px;
+    border-left: 5px solid #dc2626;
+    border-radius: 14px;
+    background: #fff1f2;
+    box-shadow: inset 0 0 0 1px #fecdd3;
+    padding: 12px 14px;
+}
+.ss-alert-head {
+    color: #b91c1c;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+.ss-alert-body {
+    color: #7f1d1d;
+    font-size: 18px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.ss-empty {
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #475569;
+    padding: 12px;
+    font-size: 18px;
+    overflow-wrap: anywhere;
+}
+.ss-composer-tip {
+    font-size: 12px;
+    color: #64748b;
+    margin: 8px 0 0 4px;
+}
+.ss-inline-error {
+    margin-top: 12px;
+    border-radius: 12px;
+    border-left: 4px solid #ef4444;
+    box-shadow: inset 0 0 0 1px #fecaca;
+    background: #fff1f2;
+    color: #b91c1c;
+    font-size: 13px;
+    padding: 10px 12px;
+}
+.ss-side-panel {
+    border: 1px solid #dbe2ea;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+}
+.ss-side-title {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #0f172a;
+    font-weight: 800;
+}
+.ss-side-note {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.45;
+}
+.ss-tone-safe {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+.ss-tone-safe .ss-risk-title,
+.ss-tone-safe .ss-risk-score,
+.ss-tone-safe .ss-risk-label {
+    color: #166534;
+}
+.ss-tone-safe .ss-chip {
+    border-color: #86efac;
+    color: #166534;
+    background: #dcfce7;
+}
+.ss-tone-safe-alert {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+    box-shadow: inset 0 0 0 1px #bbf7d0;
+}
+.ss-tone-safe-alert .ss-alert-head,
+.ss-tone-safe-alert .ss-alert-body {
+    color: #166534;
+}
+.ss-tone-suspicious {
+    border-color: #fcd34d;
+    background: #fffbeb;
+}
+.ss-tone-suspicious .ss-risk-title,
+.ss-tone-suspicious .ss-risk-score,
+.ss-tone-suspicious .ss-risk-label {
+    color: #92400e;
+}
+.ss-tone-suspicious .ss-chip {
+    border-color: #fcd34d;
+    color: #92400e;
+    background: #fef3c7;
+}
+.ss-tone-suspicious-alert {
+    border-left-color: #d97706;
+    background: #fffbeb;
+    box-shadow: inset 0 0 0 1px #fde68a;
+}
+.ss-tone-suspicious-alert .ss-alert-head,
+.ss-tone-suspicious-alert .ss-alert-body {
+    color: #92400e;
+}
+@media (max-width: 640px) {
+    .ss-phone-wrap {
+        width: 100%;
+        max-width: 100%;
+    }
+    .ss-phone-frame {
+        height: min(700px, 88vh);
+    }
+    .ss-content {
+        min-height: 0;
+    }
+    .ss-risk-score {
+        font-size: 30px;
+    }
+    .ss-side-panel {
+        margin-top: 12px;
+    }
+}

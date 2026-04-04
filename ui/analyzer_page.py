@@ -1,80 +1,218 @@
+from datetime import datetime
+import html
+from pathlib import Path
 import streamlit as st
 
 from services.analyzer_service import analyze_and_store
 
 
+def _inject_styles() -> None:
+    css_path = Path(__file__).with_name("analyzer_page.css")
+    st.markdown(f"<style>{css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+
+
+def _escape_and_break(text: str) -> str:
+    return html.escape(text).replace("\n", "<br>")
+
+
+def _tone_for(label: str) -> tuple[str, str, str, str, str]:
+    if label == "safe":
+        return (
+            "ss-tone-safe",
+            "ss-tone-safe-alert",
+            "SAFE MESSAGE",
+            "Security Notice",
+            "The content appears safe. Keep normal caution and never share OTP or passwords.",
+        )
+    if label == "suspicious":
+        return (
+            "ss-tone-suspicious",
+            "ss-tone-suspicious-alert",
+            "SUSPICIOUS SIGNAL",
+            "Security Warning",
+            "Potential scam signs detected. Verify sender identity before clicking links or replying.",
+        )
+    return (
+        "",
+        "",
+        "SCAMSHIELD ACTIVE",
+        "Security Alert",
+        "High scam probability. Do not click links, do not share data, and report the sender.",
+    )
+
+
 def render() -> None:
-    # Main heading and short instructions for the analyzer page.
-    st.title("Scam Analyzer")
-    st.write("Paste a suspicious message, email, or URL and get an AI scam risk score.")
+    _inject_styles()
+
+    st.title("Analyzer")
+    st.caption("Smartphone-style threat analysis for suspicious SMS, email text, and URLs.")
 
     # Keep text input in session state so user content survives reruns.
     input_key = "analyzer_input_text"
+    result_key = "analyzer_latest_result"
+    message_key = "analyzer_latest_message"
+    error_key = "analyzer_last_error"
+
     if input_key not in st.session_state:
         st.session_state[input_key] = ""
+    if result_key not in st.session_state:
+        st.session_state[result_key] = None
+    if message_key not in st.session_state:
+        st.session_state[message_key] = ""
+    if error_key not in st.session_state:
+        st.session_state[error_key] = ""
 
     # Optional helper sample for quick testing of the analyzer pipeline.
-    with st.expander("Try a quick sample"):
+    with st.expander("Try a quick sample", expanded=False):
         if st.button("Load phishing-like sample", use_container_width=True):
             st.session_state[input_key] = (
                 "Urgent: Your bank account is suspended. Verify now at http://bit.ly/reset-now"
             )
 
-    # Primary text area where users paste suspicious content.
-    text_input = st.text_area(
-        "Suspicious content",
-        key=input_key,
-        placeholder="Paste message/email/URL here...",
-        height=180,
-        help="Paste the full body of a suspicious email, text message, or a questionable URL to get a comprehensive risk analysis.",
-    )
+    result = st.session_state[result_key]
+    latest_message = st.session_state[message_key]
+    time_label = datetime.now().strftime("%I:%M %p").lstrip("0")
 
-    # Run analysis only when the user explicitly clicks Analyze.
-    if st.button("Analyze", type="primary", use_container_width=True):
+    left_col, right_col = st.columns([1, 1], gap="large")
+    send_clicked = False
+
+    with left_col:
+        content_html = ""
+        if result:
+            card_tone, alert_tone, risk_title, alert_title, advice = _tone_for(result["label"])
+            score = f"{result['risk_score']:.0f}%"
+
+            chip_items = result.get("matched_keywords", [])
+            chips = "".join(
+                [f'<span class="ss-chip">{html.escape(str(item))}</span>' for item in chip_items]
+            )
+
+            if latest_message:
+                thread_html = (
+                    f'<div class="ss-thread">'
+                    f'<div class="ss-from">Scammer</div>'
+                    f'<div class="ss-msg">{_escape_and_break(latest_message)}</div>'
+                    f'<div class="ss-alert {alert_tone}">'
+                    f'<div class="ss-alert-head">{alert_title}</div>'
+                    f'<div class="ss-alert-body">{html.escape(advice)}</div>'
+                    "</div>"
+                    "</div>"
+                )
+            else:
+                thread_html = (
+                    f'<div class="ss-thread">'
+                    f'<div class="ss-alert {alert_tone}">'
+                    f'<div class="ss-alert-head">{alert_title}</div>'
+                    f'<div class="ss-alert-body">{html.escape(advice)}</div>'
+                    "</div>"
+                    "</div>"
+                )
+
+            content_html = (
+                f'<div class="ss-risk-card {card_tone}">'
+                '<div class="ss-risk-head">'
+                f'<div class="ss-risk-title">{risk_title}</div>'
+                "<div>"
+                f'<div class="ss-risk-score">{score}</div>'
+                '<div class="ss-risk-label">Risk Score</div>'
+                "</div>"
+                "</div>"
+                f'<div class="ss-chip-row">{chips}</div>'
+                "</div>"
+                f'<div class="ss-meta">TODAY, {time_label}</div>'
+                f"{thread_html}"
+            )
+        else:
+            content_html = (
+                '<div class="ss-empty">'
+                "Enter a message below to analyze scam risk and receive a live inline warning card."
+                "</div>"
+            )
+
+        error_html = ""
+        if st.session_state[error_key]:
+            error_html = (
+                f'<div class="ss-inline-error">{html.escape(st.session_state[error_key])}</div>'
+            )
+
+        phone_html = (
+            '<div class="ss-phone-wrap">'
+            '<div class="ss-phone-frame">'
+            '<div class="ss-top-notch"></div>'
+            '<div class="ss-header">'
+            '<p class="ss-header-title">Unknown Sender</p>'
+            '<div class="ss-header-sub">ScamShield live detection</div>'
+            "</div>"
+            f'<div class="ss-content">{content_html}{error_html}</div>'
+            "</div>"
+            "</div>"
+        )
+        st.markdown(phone_html, unsafe_allow_html=True)
+
+        # Bottom composer-style input that triggers analysis.
+        with st.form("analyzer_compose_form", clear_on_submit=True):
+            compose_col, send_col = st.columns([5, 1], vertical_alignment="bottom")
+            with compose_col:
+                st.text_input(
+                    "Enter your message",
+                    key=input_key,
+                    label_visibility="collapsed",
+                    placeholder="Enter your message...",
+                )
+            with send_col:
+                send_clicked = st.form_submit_button("Send", use_container_width=True)
+
+            st.markdown(
+                '<div class="ss-composer-tip">Tip: Paste full SMS or email body for better analysis.</div>',
+                unsafe_allow_html=True,
+            )
+
+    with right_col:
+        st.markdown('<div class="ss-side-panel">', unsafe_allow_html=True)
+        st.markdown('<h3 class="ss-side-title">Analysis Details</h3>', unsafe_allow_html=True)
+
+        if result:
+            st.metric("Risk Score", f"{result['risk_score']:.2f}%")
+            st.metric("Confidence", f"{max(0.0, 100.0 - float(result['risk_score'])):.2f}%")
+            st.write(f"**Label:** {str(result.get('label', '')).upper()}")
+            st.write("**Why this result**")
+            st.write(str(result.get("explanation", "-")))
+
+            keywords = result.get("matched_keywords", [])
+            st.write("**Matched keywords**")
+            if keywords:
+                st.write(", ".join([str(item) for item in keywords]))
+            else:
+                st.write("No keyword matches found.")
+
+            if latest_message:
+                st.write("**Latest analyzed message**")
+                st.caption(latest_message[:300])
+        else:
+            st.info("Run an analysis from the phone panel to populate detailed metrics here.")
+
+        st.markdown(
+            '<p class="ss-side-note">This panel is optimized for desktop while the smartphone panel mirrors your intended end-user chat experience.</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if send_clicked:
         try:
+            text_input = st.session_state.get(input_key, "")
             # Perform scoring and persistence in one service call.
             with st.spinner("Analyzing content..."):
                 result = analyze_and_store(text_input)
-
-            # Top-level result summary.
-            st.subheader("Result")
-            st.metric("Risk Score", f"{result['risk_score']}%")
-
-            # 3-column layout: label, visualized risk, and simple confidence hint.
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                # Show a status badge based on model/service label.
-                if result["label"] == "scam":
-                    st.error("🚨 SCAM")
-                elif result["label"] == "suspicious":
-                    st.warning("⚠️ SUSPICIOUS")
-                else:
-                    st.success("✅ SAFE")
-            
-            with col2:
-                # Duplicate metric plus progress bar for quick visual scanning.
-                st.metric("Risk Level", f"{result['risk_score']}%")
-                st.progress(min(max(result["risk_score"] / 100.0, 0.0), 1.0))
-            
-            with col3:
-                # Confidence is presented as the inverse of risk score.
-                st.write("**Confidence**")
-                st.write(f"`{100 - result['risk_score']}%`")
-            
-            # Explainability section from analyzer output.
-            st.divider()
-            st.write("**Why this result:**")
-            st.write(result["explanation"])
-            
-            # Show keywords only when matches were found.
-            if result["matched_keywords"]:
-                st.write("**Matched suspicious keywords:**")
-                st.write(", ".join(result["matched_keywords"]))
+            st.session_state[result_key] = result
+            st.session_state[message_key] = text_input.strip()
+            st.session_state[error_key] = ""
+            st.rerun()
 
         # ValueError is expected for invalid user input (e.g., empty text).
         except ValueError as exc:
-            st.warning(str(exc))
+            st.session_state[error_key] = str(exc)
+            st.rerun()
         # Catch-all safeguard to keep UI responsive on unexpected failures.
         except Exception as exc:
-            st.error(f"Analysis failed: {exc}")
+            st.session_state[error_key] = f"Analysis failed: {exc}"
+            st.rerun()
