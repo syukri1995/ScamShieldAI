@@ -58,6 +58,8 @@ def render() -> None:
 
     # Show shortened preview to keep table compact.
     filtered["input_preview"] = filtered["input_text"].str.slice(0, 100)
+    if "ai_tips" in filtered.columns:
+        filtered["ai_tips_preview"] = filtered["ai_tips"].fillna("").astype(str).str.slice(0, 120)
 
     # Quick summary for currently filtered set.
     c1, c2 = st.columns(2)
@@ -67,8 +69,8 @@ def render() -> None:
         round(float(filtered["risk_score"].mean()), 2) if not filtered.empty else 0.0,
     )
 
-    st.dataframe(
-        filtered[["created_at", "label", "risk_score", "input_preview", "explanation"]],
-        use_container_width=True,
-        hide_index=True,
-    )
+    display_columns = ["created_at", "label", "risk_score", "input_preview", "explanation"]
+    if "ai_tips_preview" in filtered.columns:
+        display_columns.append("ai_tips_preview")
+
+    st.dataframe(filtered[display_columns], use_container_width=True, hide_index=True)

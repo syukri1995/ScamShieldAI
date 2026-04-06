@@ -25,9 +25,16 @@ def init_db(db_path: str | Path | None = None) -> None:
                 label TEXT NOT NULL,
                 explanation TEXT NOT NULL,
                 matched_keywords TEXT NOT NULL,
+                ai_tips TEXT,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
             """)
+
+        # Backfill schema for databases created before ai_tips existed.
+        cursor = conn.execute("PRAGMA table_info(scan_history)")
+        column_names = {str(row[1]) for row in cursor.fetchall()}
+        if "ai_tips" not in column_names:
+            conn.execute("ALTER TABLE scan_history ADD COLUMN ai_tips TEXT")
         conn.commit()
 
 
@@ -37,6 +44,7 @@ def insert_scan(
     label: str,
     explanation: str,
     matched_keywords: list[str],
+    ai_tips: str | None = None,
     db_path: str | Path | None = None,
 ) -> None:
     # Store matched keywords as JSON text for simple SQLite persistence.
@@ -44,10 +52,17 @@ def insert_scan(
     with _connect(db_path) as conn:
         conn.execute(
             """
-            INSERT INTO scan_history (input_text, risk_score, label, explanation, matched_keywords)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO scan_history (
+                input_text,
+                risk_score,
+                label,
+                explanation,
+                matched_keywords,
+                ai_tips
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (input_text, risk_score, label, explanation, payload),
+            (input_text, risk_score, label, explanation, payload, ai_tips),
         )
         conn.commit()
 
@@ -78,7 +93,15 @@ def fetch_history(
     with _connect(db_path) as conn:
         cursor = conn.execute(
             """
-            SELECT id, input_text, risk_score, label, explanation, matched_keywords, created_at
+            SELECT
+                id,
+                input_text,
+                risk_score,
+                label,
+                explanation,
+                matched_keywords,
+                ai_tips,
+                created_at
             FROM scan_history
             ORDER BY id DESC
             LIMIT ?
@@ -95,7 +118,8 @@ def fetch_history(
             "label": row[3],
             "explanation": row[4],
             "matched_keywords": json.loads(row[5] or "[]"),
-            "created_at": row[6],
+            "ai_tips": row[6],
+            "created_at": row[7],
         }
         for row in rows
     ]

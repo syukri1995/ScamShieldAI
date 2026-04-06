@@ -76,6 +76,13 @@ def render() -> None:
         if result:
             card_tone, alert_tone, risk_title, alert_title, advice = _tone_for(result["label"])
             score = f"{result['risk_score']:.0f}%"
+            ai_tips = str(result.get("ai_tips") or "").strip()
+            ai_tips_html = ""
+            if ai_tips:
+                ai_tips_html = (
+                    '<div class="ss-alert-head" style="margin-top:8px;">AI response tips</div>'
+                    f'<div class="ss-alert-body">{_escape_and_break(ai_tips)}</div>'
+                )
 
             chip_items = result.get("matched_keywords", [])
             chips = "".join(
@@ -90,6 +97,7 @@ def render() -> None:
                     f'<div class="ss-alert {alert_tone}">'
                     f'<div class="ss-alert-head">{alert_title}</div>'
                     f'<div class="ss-alert-body">{html.escape(advice)}</div>'
+                    f"{ai_tips_html}"
                     "</div>"
                     "</div>"
                 )
@@ -99,6 +107,7 @@ def render() -> None:
                     f'<div class="ss-alert {alert_tone}">'
                     f'<div class="ss-alert-head">{alert_title}</div>'
                     f'<div class="ss-alert-body">{html.escape(advice)}</div>'
+                    f"{ai_tips_html}"
                     "</div>"
                     "</div>"
                 )
@@ -277,6 +286,15 @@ def render() -> None:
             st.write(f"**Label:** {str(result.get('label', '')).upper()}")
             st.write("**Why this result**")
             st.write(str(result.get("explanation", "-")))
+
+            ai_tips = str(result.get("ai_tips") or "").strip()
+            if ai_tips:
+                st.write("**AI response tips**")
+                st.write(ai_tips)
+            elif str(result.get("label", "")).lower() == "safe":
+                st.caption("AI tips are generated only for suspicious or scam results.")
+            else:
+                st.caption("AI tips are currently unavailable. Check API key or provider connectivity.")
 
             keywords = result.get("matched_keywords", [])
             st.write("**Matched keywords**")
