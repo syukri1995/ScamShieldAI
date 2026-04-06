@@ -162,6 +162,7 @@ def render() -> None:
                     key=input_key,
                     label_visibility="collapsed",
                     placeholder="Enter your message...",
+                    help="Paste an SMS, email, or URL here to analyze it for scams or phishing.",
                 )
 
                 # Fetch random history and generate Javascript for dropdown overlay
@@ -198,6 +199,8 @@ def render() -> None:
                         }}
 
                         const dropdown = parentDoc.createElement('div');
+                        dropdown.setAttribute('role', 'listbox');
+                        dropdown.setAttribute('aria-label', 'Message suggestions');
                         dropdown.style.cssText = `
                             position: absolute;
                             top: 100%;
@@ -219,6 +222,8 @@ def render() -> None:
                             // Truncate long texts
                             const displayText = text.length > 50 ? text.substring(0, 47) + '...' : text;
                             item.textContent = displayText;
+                            item.setAttribute('role', 'option');
+                            item.setAttribute('aria-selected', 'false');
                             item.style.cssText = `
                                 padding: 8px 12px;
                                 cursor: pointer;
@@ -270,7 +275,11 @@ def render() -> None:
                 st.components.v1.html(dropdown_js, height=0)
 
             with send_col:
-                send_clicked = st.form_submit_button("Send", use_container_width=True)
+                send_clicked = st.form_submit_button(
+                    "Send",
+                    use_container_width=True,
+                    help="Analyze this message for potential scams."
+                )
 
             st.markdown(
                 '<div class="ss-composer-tip">Tip: Paste full SMS or email body for better analysis.</div>',
