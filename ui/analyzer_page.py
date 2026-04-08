@@ -276,6 +276,7 @@ def render() -> None:
 
             with send_col:
                 send_clicked = st.form_submit_button(
+                    "Send",
                     use_container_width=True,
                     help="Analyze this message for potential scams."
                 )
