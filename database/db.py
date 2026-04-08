@@ -35,6 +35,30 @@ def init_db(db_path: str | Path | None = None) -> None:
         column_names = {str(row[1]) for row in cursor.fetchall()}
         if "ai_tips" not in column_names:
             conn.execute("ALTER TABLE scan_history ADD COLUMN ai_tips TEXT")
+
+        # Feature 1: Scam Network Visualization Data
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS scam_events (
+                event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_id TEXT,
+                receiver_id TEXT,
+                message_text TEXT NOT NULL,
+                link TEXT,
+                scam_score REAL,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+            """)
+
+        # Feature 2: Auto-Block Scam Accounts Data
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS user_risk (
+                user_id TEXT PRIMARY KEY,
+                scam_count INTEGER DEFAULT 0,
+                risk_score REAL DEFAULT 0.0,
+                status TEXT DEFAULT 'active'
+            )
+            """)
+
         conn.commit()
 
 
