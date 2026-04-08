@@ -8,3 +8,4 @@ openai>=1.72.0
 python-dotenv>=1.0.1
 networkx
 pyvis
+altair<5.0.0
