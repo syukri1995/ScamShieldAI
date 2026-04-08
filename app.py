@@ -1,7 +1,7 @@
 import streamlit as st
 
 from database.db import init_db
-from ui import analyzer_page, dashboard_page, history_page
+from ui import analyzer_page, dashboard_page, history_page, network_dashboard
 
 # Configure global Streamlit settings and ensure database schema exists at startup.
 st.set_page_config(page_title="ScamShield AI", page_icon="🛡️", layout="wide")
@@ -27,7 +27,7 @@ st.sidebar.markdown('<p style="font-size: 12px; font-weight: 600; color: #94A3B8
 # Simple sidebar router to switch between app pages using styled labels.
 page = st.sidebar.radio(
     "Navigate",
-    ["🔍 Analyzer", "📜 History", "📊 Dashboard"],
+    ["🔍 Analyzer", "📜 History", "📊 Analytics Dashboard", "🕸️ Network Visualization", "🚫 Blocked Accounts"],
     label_visibility="collapsed"
 )
 
@@ -48,5 +48,9 @@ if page == "🔍 Analyzer":
     analyzer_page.render()
 elif page == "📜 History":
     history_page.render()
-else:
+elif page == "📊 Analytics Dashboard":
     dashboard_page.render()
+elif page == "🕸️ Network Visualization":
+    network_dashboard.render_network_dashboard()
+elif page == "🚫 Blocked Accounts":
+    network_dashboard.render_blocked_accounts()

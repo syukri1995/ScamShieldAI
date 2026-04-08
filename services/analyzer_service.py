@@ -150,4 +150,32 @@ def analyze_and_store(
         ai_tips=result.get("ai_tips"),
         db_path=db_path,
     )
+
+    # Feature 1 & 2 Integration: Store interaction data and process risk.
+    # Normally sender_id and receiver_id would come from the messaging context (e.g. Telegram),
+    # but here we infer or use defaults since the standard UI only accepts input text.
+    # Extract links from the text using a naive heuristic if any exist
+    import re
+    urls = re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    extracted_link = ",".join(urls) if urls else ""
+
+    try:
+        from database.db import _connect
+        with _connect(db_path) as conn:
+            conn.execute(
+                """
+                INSERT INTO scam_events (sender_id, receiver_id, message_text, link, scam_score)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                ("unknown_sender", "current_user", text, extracted_link, result["risk_score"] / 100.0)
+            )
+            conn.commit()
+
+        from services.risk_engine import process_scam_event
+        # Auto-block users who repeatedly send scams
+        process_scam_event("unknown_sender", result["risk_score"] / 100.0, db_path=db_path)
+    except Exception as e:
+        # Silently fail if there's an issue with the new features to avoid breaking the core analyzer
+        pass
+
     return result
