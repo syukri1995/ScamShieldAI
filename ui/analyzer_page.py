@@ -154,8 +154,8 @@ def render() -> None:
         st.markdown(phone_html, unsafe_allow_html=True)
 
         # Bottom composer-style input that triggers analysis.
-        with st.form("analyzer_compose_form", clear_on_submit=True):
-            compose_col, send_col = st.columns([5, 1], vertical_alignment="bottom")
+        with st.form("analyzer_compose_form", clear_on_submit=True, border=False):
+            compose_col, send_col = st.columns([4, 1], vertical_alignment="bottom")
             with compose_col:
                 st.text_input(
                     "Enter your message",
