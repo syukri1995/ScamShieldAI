@@ -1,10 +1,12 @@
-import networkx as nx
-from pyvis.network import Network
+import json
 import sqlite3
 from pathlib import Path
-import json
 
-from database.db import _connect, DEFAULT_DB_PATH
+import networkx as nx
+from pyvis.network import Network
+
+from database.db import DEFAULT_DB_PATH, _connect
+
 
 def get_network_graph(db_path: str | Path | None = None) -> nx.Graph:
     """Builds a NetworkX graph from the scam_events data."""
@@ -22,12 +24,21 @@ def get_network_graph(db_path: str | Path | None = None) -> nx.Graph:
             continue
 
         # Add scammer node
-        G.add_node(sender_id, group="scammer", title=f"Scammer: {sender_id}", color="#EF4444")
+        G.add_node(
+            sender_id, group="scammer", title=f"Scammer: {sender_id}", color="#EF4444"
+        )
 
         # Add victim node
         if receiver_id:
-            G.add_node(receiver_id, group="victim", title=f"Victim: {receiver_id}", color="#3B82F6")
-            G.add_edge(sender_id, receiver_id, title=f"Score: {scam_score}", weight=scam_score)
+            G.add_node(
+                receiver_id,
+                group="victim",
+                title=f"Victim: {receiver_id}",
+                color="#3B82F6",
+            )
+            G.add_edge(
+                sender_id, receiver_id, title=f"Score: {scam_score}", weight=scam_score
+            )
 
         # Add link node
         if link:
@@ -39,6 +50,7 @@ def get_network_graph(db_path: str | Path | None = None) -> nx.Graph:
 
     return G
 
+
 def get_scam_clusters(G: nx.Graph) -> list[set]:
     """Detects clusters of scams using connected components."""
     # Find all connected components
@@ -46,9 +58,16 @@ def get_scam_clusters(G: nx.Graph) -> list[set]:
     # Filter out single-node components to just find actual networks
     return [c for c in components if len(c) > 1]
 
+
 def generate_pyvis_html(G: nx.Graph, output_path: str = "network_graph.html") -> str:
     """Generates a PyVis HTML string for the NetworkX graph."""
-    net = Network(height="600px", width="100%", bgcolor="#ffffff", font_color="black", notebook=False)
+    net = Network(
+        height="600px",
+        width="100%",
+        bgcolor="#ffffff",
+        font_color="black",
+        notebook=False,
+    )
 
     # Configure physics for better visualization of clusters
     net.force_atlas_2based()

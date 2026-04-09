@@ -168,13 +168,22 @@ def fetch_stats(db_path: str | Path | None = None) -> dict[str, Any]:
 
     scam_rate = round((scam_count / total) * 100.0, 2) if total else 0.0
 
-    # Build a frequency map from recent keyword matches.
-    keyword_counts: dict[str, int] = {}
-    for item in fetch_history(limit=1000, db_path=db_path):
-        for kw in item["matched_keywords"]:
-            keyword_counts[kw] = keyword_counts.get(kw, 0) + 1
-
-    top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    # Build a frequency map from recent keyword matches using SQLite json_each
+    # for significantly better performance than fetching and parsing in Python.
+    with _connect(db_path) as conn:
+        cursor = conn.execute("""
+            SELECT value, COUNT(*) as count
+            FROM (
+                SELECT matched_keywords
+                FROM scan_history
+                ORDER BY id DESC
+                LIMIT 1000
+            ), json_each(matched_keywords)
+            GROUP BY value
+            ORDER BY count DESC
+            LIMIT 10
+        """)
+        top_keywords = cursor.fetchall()
 
     return {
         "total_scans": total,

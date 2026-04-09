@@ -22,13 +22,22 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-st.sidebar.markdown('<p style="font-size: 12px; font-weight: 600; color: #94A3B8; margin-bottom: -10px; text-transform: uppercase; letter-spacing: 1px;">Menu</p>', unsafe_allow_html=True)
+st.sidebar.markdown(
+    '<p style="font-size: 12px; font-weight: 600; color: #94A3B8; margin-bottom: -10px; text-transform: uppercase; letter-spacing: 1px;">Menu</p>',
+    unsafe_allow_html=True,
+)
 
 # Simple sidebar router to switch between app pages using styled labels.
 page = st.sidebar.radio(
     "Navigate",
-    ["🔍 Analyzer", "📜 History", "📊 Analytics Dashboard", "🕸️ Network Visualization", "🚫 Blocked Accounts"],
-    label_visibility="collapsed"
+    [
+        "🔍 Analyzer",
+        "📜 History",
+        "📊 Analytics Dashboard",
+        "🕸️ Network Visualization",
+        "🚫 Blocked Accounts",
+    ],
+    label_visibility="collapsed",
 )
 
 st.sidebar.divider()
