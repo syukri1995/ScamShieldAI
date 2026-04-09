@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from database.db import _connect, init_db
-from services.risk_engine import process_scam_event
+from services.risk_engine import process_scam_events_batch
 
 
 def generate_mock_data():
@@ -101,11 +101,11 @@ def generate_mock_data():
             )
         conn.commit()
 
-    for event in events:
-        # Process risk engine (update user_risk and auto-block if necessary)
-        # Only process if score is high enough to be considered a scam attempt
-        if event["scam_score"] > 0.5:
-            process_scam_event(event["sender_id"], event["scam_score"])
+    # Process risk engine (update user_risk and auto-block if necessary)
+    # Only process if score is high enough to be considered a scam attempt
+    scam_events_to_process = [e for e in events if e["scam_score"] > 0.5]
+    if scam_events_to_process:
+        process_scam_events_batch(scam_events_to_process)
 
 
 if __name__ == "__main__":

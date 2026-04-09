@@ -11,64 +11,91 @@ def process_scam_event(
     """
     Updates the user's risk profile based on a new message and auto-blocks if needed.
     """
-    with _connect(db_path) as conn:
-        cursor = conn.execute(
-            "SELECT scam_count, risk_score, status FROM user_risk WHERE user_id = ?",
-            (user_id,),
-        )
-        row = cursor.fetchone()
+    return process_scam_events_batch(
+        [{"sender_id": user_id, "scam_score": scam_probability}], db_path
+    )[0]
 
-        if row:
-            scam_count, risk_score, status = row
-        else:
-            scam_count, risk_score, status = 0, 0.0, "active"
+
+def process_scam_events_batch(
+    events: list[dict[str, Any]], db_path: str | Path | None = None
+) -> list[dict[str, Any]]:
+    """
+    Updates the user's risk profile for multiple events in a single transaction.
+    """
+    if not events:
+        return []
+
+    user_updates: dict[str, list[float]] = {}
+    for event in events:
+        u_id = event["sender_id"]
+        score = event["scam_score"]
+        if u_id not in user_updates:
+            user_updates[u_id] = []
+        user_updates[u_id].append(score)
+
+    results = []
+    with _connect(db_path) as conn:
+        user_ids = list(user_updates.keys())
+        # SQLite has a limit on the number of host parameters, but for mock data generation it's usually fine.
+        # For very large batches, we might need to chunk this.
+        placeholders = ",".join(["?"] * len(user_ids))
+        cursor = conn.execute(
+            f"SELECT user_id, scam_count, risk_score, status FROM user_risk WHERE user_id IN ({placeholders})",
+            user_ids,
+        )
+        current_states = {
+            row[0]: {"scam_count": row[1], "risk_score": row[2], "status": row[3]}
+            for row in cursor.fetchall()
+        }
+
+        for user_id, scores in user_updates.items():
+            if user_id in current_states:
+                state = current_states[user_id]
+            else:
+                state = {"scam_count": 0, "risk_score": 0.0, "status": "active"}
+                conn.execute(
+                    "INSERT INTO user_risk (user_id, scam_count, risk_score, status) VALUES (?, 0, 0.0, 'active')",
+                    (user_id,),
+                )
+
+            if state["status"] == "blocked":
+                results.append({"user_id": user_id, "status": "blocked", "action": "none"})
+                continue
+
+            new_scam_count = state["scam_count"]
+            new_risk_score = state["risk_score"]
+            new_status = state["status"]
+
+            for score in scores:
+                new_scam_count += 1
+                new_risk_score += score
+                if new_scam_count >= 3 and new_risk_score >= 2.0:
+                    new_status = "blocked"
+                    break
+
+            action = "updated" if new_status == "active" else "blocked"
+
             conn.execute(
-                "INSERT INTO user_risk (user_id, scam_count, risk_score, status) VALUES (?, ?, ?, ?)",
-                (user_id, scam_count, risk_score, status),
+                """
+                UPDATE user_risk
+                SET scam_count = ?, risk_score = ?, status = ?
+                WHERE user_id = ?
+                """,
+                (new_scam_count, new_risk_score, new_status, user_id),
             )
 
-        if status == "blocked":
-            # Already blocked, do not process further
-            return {"user_id": user_id, "status": "blocked", "action": "none"}
-
-        # Update counts and score
-        new_scam_count = scam_count + 1
-
-        # Simple moving average / accumulation for risk score
-        # risk_score = (scam_count * average_scam_probability)
-        # We can calculate the new average:
-        # old_total_prob = old_scam_count * old_average
-        # new_total_prob = old_total_prob + scam_probability
-        # new_average = new_total_prob / new_scam_count
-        # new_risk_score = new_scam_count * new_average = new_total_prob
-        new_risk_score = risk_score + scam_probability
-
-        new_status = "active"
-        action = "updated"
-
-        # Blocking rule:
-        # if scam_count >= 3 and risk_score >= 2.0: status = "blocked"
-        if new_scam_count >= 3 and new_risk_score >= 2.0:
-            new_status = "blocked"
-            action = "blocked"
-
-        conn.execute(
-            """
-            UPDATE user_risk
-            SET scam_count = ?, risk_score = ?, status = ?
-            WHERE user_id = ?
-            """,
-            (new_scam_count, new_risk_score, new_status, user_id),
-        )
+            results.append(
+                {
+                    "user_id": user_id,
+                    "scam_count": new_scam_count,
+                    "risk_score": round(new_risk_score, 2),
+                    "status": new_status,
+                    "action": action,
+                }
+            )
         conn.commit()
 
-    return {
-        "user_id": user_id,
-        "scam_count": new_scam_count,
-        "risk_score": round(new_risk_score, 2),
-        "status": new_status,
-        "action": action,
-    }
+    return results
 
 
 def get_blocked_users(db_path: str | Path | None = None) -> list[dict[str, Any]]:
