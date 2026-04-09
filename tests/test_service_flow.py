@@ -30,7 +30,10 @@ def test_analyze_rejects_empty(tmp_path: Path):
     assert False
 
 
-@patch("services.analyzer_service.generate_ai_tips", return_value="- Block sender\n- Do not click links")
+@patch(
+    "services.analyzer_service.generate_ai_tips",
+    return_value="- Block sender\n- Do not click links",
+)
 def test_analyze_stores_ai_tips(mock_generate, tmp_path: Path):
     # Suspicious/scam analysis should persist generated AI tips.
     db_path = tmp_path / "service_ai.db"
@@ -45,7 +48,10 @@ def test_analyze_stores_ai_tips(mock_generate, tmp_path: Path):
     assert mock_generate.call_count == 1
 
 
-@patch("services.analyzer_service.generate_ai_tips", side_effect=RuntimeError("provider down"))
+@patch(
+    "services.analyzer_service.generate_ai_tips",
+    side_effect=RuntimeError("provider down"),
+)
 def test_analyze_survives_ai_tip_failure(_mock_generate, tmp_path: Path):
     # AI-tip failure must not break normal analysis/persistence.
     db_path = tmp_path / "service_ai_fallback.db"

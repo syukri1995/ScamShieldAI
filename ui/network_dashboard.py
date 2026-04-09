@@ -1,10 +1,14 @@
+import os
+import tempfile
+
 import streamlit as st
 import streamlit.components.v1 as components
-import tempfile
-import os
 
-from services.scam_network import get_network_graph, get_scam_clusters, generate_pyvis_html
-from services.risk_engine import get_blocked_users, get_top_dangerous_accounts, unblock_user
+from services.risk_engine import (get_blocked_users,
+                                  get_top_dangerous_accounts, unblock_user)
+from services.scam_network import (generate_pyvis_html, get_network_graph,
+                                   get_scam_clusters)
+
 
 def render_network_dashboard() -> None:
     st.title("Scam Network Visualization")
@@ -20,14 +24,20 @@ def render_network_dashboard() -> None:
             G = get_network_graph()
 
             if len(G.nodes) == 0:
-                st.info("No network data available yet. Scans will populate this graph.")
+                st.info(
+                    "No network data available yet. Scans will populate this graph."
+                )
             else:
                 # Detect clusters
                 clusters = get_scam_clusters(G)
-                st.caption(f"Detected **{len(clusters)}** potential scam network clusters.")
+                st.caption(
+                    f"Detected **{len(clusters)}** potential scam network clusters."
+                )
 
                 # We use a temporary file to save the PyVis HTML
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".html"
+                ) as tmp_file:
                     html_path = tmp_file.name
 
                 html_content = generate_pyvis_html(G, output_path=html_path)
@@ -40,6 +50,7 @@ def render_network_dashboard() -> None:
                     os.remove(html_path)
         except Exception as e:
             st.error(f"Error rendering graph: {e}")
+
 
 def render_blocked_accounts() -> None:
     st.title("Blocked Accounts")
@@ -80,7 +91,9 @@ def render_blocked_accounts() -> None:
 
             # Using a callback for unblocking
             button_key = f"unblock_{user['user_id']}"
-            if cols[4].button("Unblock", key=button_key, help=f"Unblock {user['user_id']}"):
+            if cols[4].button(
+                "Unblock", key=button_key, help=f"Unblock {user['user_id']}"
+            ):
                 st.session_state.unblock_id = user["user_id"]
                 st.rerun()
 
@@ -100,12 +113,14 @@ def render_blocked_accounts() -> None:
                     help="Accumulated risk score",
                     format="%.2f",
                     min_value=0,
-                    max_value=max(10.0, max([a["risk_score"] for a in dangerous_accounts] + [0]))
+                    max_value=max(
+                        10.0, max([a["risk_score"] for a in dangerous_accounts] + [0])
+                    ),
                 ),
-                "status": "Status"
+                "status": "Status",
             },
             hide_index=True,
-            use_container_width=True
+            use_container_width=True,
         )
     else:
         st.info("No risk data available.")

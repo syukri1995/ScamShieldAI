@@ -2,14 +2,20 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from database.db import _connect, DEFAULT_DB_PATH
+from database.db import DEFAULT_DB_PATH, _connect
 
-def process_scam_event(user_id: str, scam_probability: float, db_path: str | Path | None = None) -> dict[str, Any]:
+
+def process_scam_event(
+    user_id: str, scam_probability: float, db_path: str | Path | None = None
+) -> dict[str, Any]:
     """
     Updates the user's risk profile based on a new message and auto-blocks if needed.
     """
     with _connect(db_path) as conn:
-        cursor = conn.execute("SELECT scam_count, risk_score, status FROM user_risk WHERE user_id = ?", (user_id,))
+        cursor = conn.execute(
+            "SELECT scam_count, risk_score, status FROM user_risk WHERE user_id = ?",
+            (user_id,),
+        )
         row = cursor.fetchone()
 
         if row:
@@ -18,7 +24,7 @@ def process_scam_event(user_id: str, scam_probability: float, db_path: str | Pat
             scam_count, risk_score, status = 0, 0.0, "active"
             conn.execute(
                 "INSERT INTO user_risk (user_id, scam_count, risk_score, status) VALUES (?, ?, ?, ?)",
-                (user_id, scam_count, risk_score, status)
+                (user_id, scam_count, risk_score, status),
             )
 
         if status == "blocked":
@@ -52,7 +58,7 @@ def process_scam_event(user_id: str, scam_probability: float, db_path: str | Pat
             SET scam_count = ?, risk_score = ?, status = ?
             WHERE user_id = ?
             """,
-            (new_scam_count, new_risk_score, new_status, user_id)
+            (new_scam_count, new_risk_score, new_status, user_id),
         )
         conn.commit()
 
@@ -61,20 +67,19 @@ def process_scam_event(user_id: str, scam_probability: float, db_path: str | Pat
         "scam_count": new_scam_count,
         "risk_score": round(new_risk_score, 2),
         "status": new_status,
-        "action": action
+        "action": action,
     }
+
 
 def get_blocked_users(db_path: str | Path | None = None) -> list[dict[str, Any]]:
     """Returns a list of blocked users."""
     with _connect(db_path) as conn:
-        cursor = conn.execute(
-            """
+        cursor = conn.execute("""
             SELECT user_id, scam_count, risk_score, status
             FROM user_risk
             WHERE status = 'blocked'
             ORDER BY risk_score DESC
-            """
-        )
+            """)
         rows = cursor.fetchall()
 
     return [
@@ -87,6 +92,7 @@ def get_blocked_users(db_path: str | Path | None = None) -> list[dict[str, Any]]
         for row in rows
     ]
 
+
 def unblock_user(user_id: str, db_path: str | Path | None = None) -> None:
     """Unblocks a user and resets their risk score."""
     with _connect(db_path) as conn:
@@ -96,11 +102,14 @@ def unblock_user(user_id: str, db_path: str | Path | None = None) -> None:
             SET status = 'active', scam_count = 0, risk_score = 0.0
             WHERE user_id = ?
             """,
-            (user_id,)
+            (user_id,),
         )
         conn.commit()
 
-def get_top_dangerous_accounts(limit: int = 10, db_path: str | Path | None = None) -> list[dict[str, Any]]:
+
+def get_top_dangerous_accounts(
+    limit: int = 10, db_path: str | Path | None = None
+) -> list[dict[str, Any]]:
     """Returns the top most dangerous accounts."""
     with _connect(db_path) as conn:
         cursor = conn.execute(
@@ -110,7 +119,7 @@ def get_top_dangerous_accounts(limit: int = 10, db_path: str | Path | None = Non
             ORDER BY risk_score DESC
             LIMIT ?
             """,
-            (limit,)
+            (limit,),
         )
         rows = cursor.fetchall()
 

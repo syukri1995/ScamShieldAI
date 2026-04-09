@@ -1,16 +1,19 @@
-from datetime import datetime
 import html
 import json
+from datetime import datetime
 from pathlib import Path
+
 import streamlit as st
 
-from services.analyzer_service import analyze_and_store
 from database.db import fetch_random_history
+from services.analyzer_service import analyze_and_store
 
 
 def _inject_styles() -> None:
     css_path = Path(__file__).with_name("analyzer_page.css")
-    st.markdown(f"<style>{css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+    st.markdown(
+        f"<style>{css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True
+    )
 
 
 def _escape_and_break(text: str) -> str:
@@ -47,7 +50,9 @@ def render() -> None:
     _inject_styles()
 
     st.title("Analyzer")
-    st.caption("Smartphone-style threat analysis for suspicious SMS, email text, and URLs.")
+    st.caption(
+        "Smartphone-style threat analysis for suspicious SMS, email text, and URLs."
+    )
 
     # Keep text input in session state so user content survives reruns.
     input_key = "analyzer_input_text"
@@ -74,7 +79,9 @@ def render() -> None:
     with left_col:
         content_html = ""
         if result:
-            card_tone, alert_tone, risk_title, alert_title, advice = _tone_for(result["label"])
+            card_tone, alert_tone, risk_title, alert_title, advice = _tone_for(
+                result["label"]
+            )
             score = f"{result['risk_score']:.0f}%"
             ai_tips = str(result.get("ai_tips") or "").strip()
             ai_tips_html = ""
@@ -86,7 +93,10 @@ def render() -> None:
 
             chip_items = result.get("matched_keywords", [])
             chips = "".join(
-                [f'<span class="ss-chip">{html.escape(str(item))}</span>' for item in chip_items]
+                [
+                    f'<span class="ss-chip">{html.escape(str(item))}</span>'
+                    for item in chip_items
+                ]
             )
 
             if latest_message:
@@ -135,9 +145,7 @@ def render() -> None:
 
         error_html = ""
         if st.session_state[error_key]:
-            error_html = (
-                f'<div class="ss-inline-error">{html.escape(st.session_state[error_key])}</div>'
-            )
+            error_html = f'<div class="ss-inline-error">{html.escape(st.session_state[error_key])}</div>'
 
         phone_html = (
             '<div class="ss-phone-wrap">'
@@ -169,7 +177,12 @@ def render() -> None:
                 history_items = fetch_random_history(limit=4)
 
                 # We need to escape the texts properly for javascript string literal inclusion
-                js_array = json.dumps(history_items).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+                js_array = (
+                    json.dumps(history_items)
+                    .replace("<", "\\u003c")
+                    .replace(">", "\\u003e")
+                    .replace("&", "\\u0026")
+                )
 
                 dropdown_js = f"""
                 <script>
@@ -278,7 +291,7 @@ def render() -> None:
                 send_clicked = st.form_submit_button(
                     "Send",
                     use_container_width=True,
-                    help="Analyze this message for potential scams."
+                    help="Analyze this message for potential scams.",
                 )
 
             st.markdown(
@@ -291,7 +304,9 @@ def render() -> None:
 
         if result:
             st.metric("Risk Score", f"{result['risk_score']:.2f}%")
-            st.metric("Confidence", f"{max(0.0, 100.0 - float(result['risk_score'])):.2f}%")
+            st.metric(
+                "Confidence", f"{max(0.0, 100.0 - float(result['risk_score'])):.2f}%"
+            )
             st.write(f"**Label:** {str(result.get('label', '')).upper()}")
             st.write("**Why this result**")
             st.write(str(result.get("explanation", "-")))
@@ -303,7 +318,9 @@ def render() -> None:
             elif str(result.get("label", "")).lower() == "safe":
                 st.caption("AI tips are generated only for suspicious or scam results.")
             else:
-                st.caption("AI tips are currently unavailable. Check API key or provider connectivity.")
+                st.caption(
+                    "AI tips are currently unavailable. Check API key or provider connectivity."
+                )
 
             keywords = result.get("matched_keywords", [])
             st.write("**Matched keywords**")
@@ -316,7 +333,9 @@ def render() -> None:
                 st.write("**Latest analyzed message**")
                 st.caption(latest_message[:300])
         else:
-            st.info("Run an analysis from the phone panel to populate detailed metrics here.")
+            st.info(
+                "Run an analysis from the phone panel to populate detailed metrics here."
+            )
 
         st.markdown(
             '<p class="ss-side-note">This panel is optimized for desktop while the smartphone panel mirrors your intended end-user chat experience.</p>',
