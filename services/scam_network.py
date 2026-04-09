@@ -1,11 +1,9 @@
-import json
-import sqlite3
 from pathlib import Path
 
 import networkx as nx
 from pyvis.network import Network
 
-from database.db import DEFAULT_DB_PATH, _connect
+from database.db import _connect
 
 
 def get_network_graph(db_path: str | Path | None = None) -> nx.Graph:
