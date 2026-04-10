@@ -4,6 +4,26 @@ import streamlit as st
 from services.stats_service import get_dashboard_stats
 
 
+def _render_distribution_fallback(dist_df: pd.DataFrame) -> None:
+    total = max(1, int(dist_df["count"].sum()))
+    for _, row in dist_df.iterrows():
+        label = str(row["label"]).title()
+        count = int(row["count"])
+        ratio = min(1.0, max(0.0, count / total))
+        st.write(f"{label}: {count}")
+        st.progress(ratio)
+
+
+def _render_keywords_fallback(kw_df: pd.DataFrame) -> None:
+    total = max(1, int(kw_df["count"].sum()))
+    for _, row in kw_df.iterrows():
+        keyword = str(row["keyword"])
+        count = int(row["count"])
+        ratio = min(1.0, max(0.0, count / total))
+        st.write(f"{keyword}: {count}")
+        st.progress(ratio)
+
+
 def render() -> None:
     # Dashboard overview with key scan metrics and trends.
     st.title("Analytics Dashboard")
@@ -30,12 +50,13 @@ def render() -> None:
     )
     # Distribution chart by predicted label.
     st.subheader("Label Distribution")
-    st.bar_chart(dist_df.set_index("label"))
+    _render_distribution_fallback(dist_df)
+    st.dataframe(dist_df, hide_index=True, use_container_width=True)
 
     st.subheader("Most Common Scam Keywords")
     if stats["top_keywords"]:
-        # Plot top extracted scam-indicator keywords.
         kw_df = pd.DataFrame(stats["top_keywords"], columns=["keyword", "count"])
-        st.bar_chart(kw_df.set_index("keyword"))
+        _render_keywords_fallback(kw_df)
+        st.dataframe(kw_df, hide_index=True, use_container_width=True)
     else:
         st.write("No keyword data yet.")

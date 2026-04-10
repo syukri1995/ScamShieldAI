@@ -6,6 +6,6 @@ joblib>=1.4.2
 pytest>=8.3.5
 openai>=1.72.0
 python-dotenv>=1.0.1
-networkx
-pyvis
+networkx>=3.3
+pyvis>=0.3.2
 altair<5.0.0

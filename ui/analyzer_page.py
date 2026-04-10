@@ -163,7 +163,8 @@ def render() -> None:
 
         # Bottom composer-style input that triggers analysis.
         with st.form("analyzer_compose_form", clear_on_submit=True, border=False):
-            compose_col, send_col = st.columns([4, 1], vertical_alignment="bottom")
+            st.markdown('<div class="ss-compose-wrap">', unsafe_allow_html=True)
+            compose_col, send_col = st.columns([5, 1], vertical_alignment="center")
             with compose_col:
                 st.text_input(
                     "Enter your message",
@@ -293,6 +294,8 @@ def render() -> None:
                     use_container_width=True,
                     help="Analyze this message for potential scams.",
                 )
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown(
                 '<div class="ss-composer-tip">Tip: Paste full SMS or email body for better analysis.</div>',

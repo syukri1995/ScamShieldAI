@@ -184,6 +184,20 @@
     color: #64748b;
     margin: 8px 0 0 4px;
 }
+.ss-compose-wrap {
+    border: 1px solid #dbe2ea;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    padding: 10px;
+    margin-top: 6px;
+}
+.ss-compose-wrap div[data-testid="stIFrame"] {
+    display: none;
+}
+.ss-compose-wrap iframe {
+    display: none;
+}
 .ss-inline-error {
     margin-top: 12px;
     border-radius: 12px;
@@ -262,6 +276,38 @@
 div[data-testid="stFormSubmitButton"] button {
     white-space: nowrap;
     min-width: max-content;
+    height: 44px;
+    margin-top: 0;
+    border-radius: 10px;
+    font-weight: 700;
+}
+div[data-testid="stTextInput"] div[data-baseweb="input"] {
+    background: linear-gradient(90deg, #1f2435 0%, #252938 100%);
+    border: 1px solid #98a2b3;
+    border-radius: 10px;
+    box-shadow: none;
+}
+div[data-testid="stTextInput"] div[data-baseweb="base-input"] {
+    background: transparent;
+}
+div[data-testid="stTextInput"] input {
+    height: 44px;
+    border-radius: 10px;
+    padding-left: 12px;
+    border: 0;
+    background: transparent;
+    color: #e5e7eb;
+}
+div[data-testid="stTextInput"] input:focus {
+    border: 0;
+    box-shadow: none;
+}
+div[data-testid="stTextInput"] input::placeholder {
+    color: #9ca3af;
+}
+div[data-testid="stTextInput"]:focus-within div[data-baseweb="input"] {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 1px #38bdf8;
 }
 
 @media (max-width: 640px) {
@@ -280,5 +326,9 @@ div[data-testid="stFormSubmitButton"] button {
     }
     .ss-side-panel {
         margin-top: 12px;
+    }
+    .ss-compose-wrap {
+        padding: 8px;
+        border-radius: 12px;
     }
 }
