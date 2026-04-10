@@ -184,14 +184,7 @@
     color: #64748b;
     margin: 8px 0 0 4px;
 }
-.ss-compose-wrap {
-    border: 1px solid #dbe2ea;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
-    padding: 10px;
-    margin-top: 6px;
-}
+
 .ss-compose-wrap div[data-testid="stIFrame"] {
     display: none;
 }
