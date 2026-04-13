@@ -10,7 +10,11 @@ def test_analyze_and_store(tmp_path: Path):
     db_path = tmp_path / "service.db"
     init_db(db_path)
 
-    result = analyze_and_store("Urgent winner claim your prize now", db_path=db_path)
+    result = analyze_and_store(
+        "Urgent winner claim your prize now",
+        sender_id="test_sender",
+        db_path=db_path,
+    )
     assert result["risk_score"] >= 0
 
     history = fetch_history(db_path=db_path)
@@ -39,7 +43,11 @@ def test_analyze_stores_ai_tips(mock_generate, tmp_path: Path):
     db_path = tmp_path / "service_ai.db"
     init_db(db_path)
 
-    result = analyze_and_store("Urgent verify your bank account now", db_path=db_path)
+    result = analyze_and_store(
+        "Urgent verify your bank account now",
+        sender_id="test_sender",
+        db_path=db_path,
+    )
     assert result.get("ai_tips")
 
     history = fetch_history(db_path=db_path)
@@ -57,7 +65,11 @@ def test_analyze_survives_ai_tip_failure(_mock_generate, tmp_path: Path):
     db_path = tmp_path / "service_ai_fallback.db"
     init_db(db_path)
 
-    result = analyze_and_store("Claim your winner prize now", db_path=db_path)
+    result = analyze_and_store(
+        "Claim your winner prize now",
+        sender_id="test_sender",
+        db_path=db_path,
+    )
     assert result.get("ai_tips") is None
 
     history = fetch_history(db_path=db_path)

@@ -125,7 +125,9 @@ def generate_ai_tips(text: str, prediction: dict[str, Any]) -> str | None:
 
 
 def analyze_and_store(
-    input_text: str, db_path: str | Path | None = None
+    input_text: str,
+    sender_id: str | None = None,
+    db_path: str | Path | None = None,
 ) -> dict[str, Any]:
     # Trim user input and reject empty submissions early.
     text = (input_text or "").strip()
@@ -162,6 +164,8 @@ def analyze_and_store(
     try:
         from database.db import _connect
 
+        sender_value = (sender_id or "unknown_sender").strip() or "unknown_sender"
+
         with _connect(db_path) as conn:
             conn.execute(
                 """
@@ -169,7 +173,7 @@ def analyze_and_store(
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 (
-                    "unknown_sender",
+                    sender_value,
                     "current_user",
                     text,
                     extracted_link,
@@ -182,7 +186,7 @@ def analyze_and_store(
 
         # Auto-block users who repeatedly send scams
         process_scam_event(
-            "unknown_sender", result["risk_score"] / 100.0, db_path=db_path
+            sender_value, result["risk_score"] / 100.0, db_path=db_path
         )
     except Exception as e:
         # Silently fail if there's an issue with the new features to avoid breaking the core analyzer

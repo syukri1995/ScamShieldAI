@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from database.db import fetch_random_history
 from services.analyzer_service import analyze_and_store
@@ -56,12 +57,18 @@ def render() -> None:
 
     # Keep text input in session state so user content survives reruns.
     input_key = "analyzer_input_text"
+    sender_key = "analyzer_sender_text"
+    sender_display_key = "analyzer_sender_display"
     result_key = "analyzer_latest_result"
     message_key = "analyzer_latest_message"
     error_key = "analyzer_last_error"
 
     if input_key not in st.session_state:
         st.session_state[input_key] = ""
+    if sender_key not in st.session_state:
+        st.session_state[sender_key] = ""
+    if sender_display_key not in st.session_state:
+        st.session_state[sender_display_key] = "Unknown Sender"
     if result_key not in st.session_state:
         st.session_state[result_key] = None
     if message_key not in st.session_state:
@@ -152,7 +159,7 @@ def render() -> None:
             '<div class="ss-phone-frame">'
             '<div class="ss-top-notch"></div>'
             '<div class="ss-header">'
-            '<p class="ss-header-title">Unknown Sender</p>'
+            f'<p class="ss-header-title">{html.escape(str(st.session_state.get(sender_display_key, "Unknown Sender")) or "Unknown Sender")}</p>'
             '<div class="ss-header-sub">ScamShield live detection</div>'
             "</div>"
             f'<div class="ss-content">{content_html}{error_html}</div>'
@@ -164,6 +171,14 @@ def render() -> None:
         # Bottom composer-style input that triggers analysis.
         with st.form("analyzer_compose_form", clear_on_submit=True, border=False):
             st.markdown('<div class="ss-compose-wrap">', unsafe_allow_html=True)
+            st.markdown('<div class="ss-field-label">Sender</div>', unsafe_allow_html=True)
+            st.text_input(
+                "Sender",
+                key=sender_key,
+                label_visibility="collapsed",
+                placeholder="Sender name,ID or leave blank for unknown",
+            )
+            st.markdown('<div class="ss-compose-row">', unsafe_allow_html=True)
             compose_col, send_col = st.columns([5, 1], vertical_alignment="center")
             with compose_col:
                 st.text_input(
@@ -286,7 +301,7 @@ def render() -> None:
                 }})();
                 </script>
                 """
-                st.components.v1.html(dropdown_js, height=0)
+                components.html(dropdown_js, height=0)
 
             with send_col:
                 send_clicked = st.form_submit_button(
@@ -294,6 +309,8 @@ def render() -> None:
                     use_container_width=True,
                     help="Analyze this message for potential scams.",
                 )
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -348,9 +365,11 @@ def render() -> None:
     if send_clicked:
         try:
             text_input = st.session_state.get(input_key, "")
+            sender_input = str(st.session_state.get(sender_key, "")).strip() or None
+            st.session_state[sender_display_key] = sender_input or "Unknown Sender"
             # Perform scoring and persistence in one service call.
             with st.spinner("Analyzing content..."):
-                result = analyze_and_store(text_input)
+                result = analyze_and_store(text_input, sender_id=sender_input)
             st.session_state[result_key] = result
             st.session_state[message_key] = text_input.strip()
             st.session_state[error_key] = ""

@@ -44,8 +44,8 @@ def apply_rules(text: str) -> dict:
 
     boost = 0.0
     # Cap each signal family so scores stay bounded and interpretable.
-    boost += min(len(matched_keywords) * 4.0, 20.0)
-    boost += min(len(set(url_flags)) * 6.0, 18.0)
+    boost += min(len(matched_keywords) * 6.0, 30.0)
+    boost += min(len(set(url_flags)) * 9.0, 27.0)
 
     reasons = []
     if matched_keywords:

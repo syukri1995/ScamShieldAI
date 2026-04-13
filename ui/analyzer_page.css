@@ -185,6 +185,19 @@
     margin: 8px 0 0 4px;
 }
 
+.ss-field-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #e5e7eb;
+    margin: 0 0 4px 2px;
+    letter-spacing: 0.02em;
+}
+
+.ss-compose-row div[data-testid="stHorizontalBlock"] {
+    align-items: center;
+    gap: 8px;
+}
+
 .ss-compose-wrap div[data-testid="stIFrame"] {
     display: none;
 }
@@ -301,6 +314,63 @@ div[data-testid="stTextInput"] input::placeholder {
 div[data-testid="stTextInput"]:focus-within div[data-baseweb="input"] {
     border-color: #38bdf8;
     box-shadow: 0 0 0 1px #38bdf8;
+}
+
+/* Keep composer row items perfectly aligned */
+.ss-compose-wrap div[data-testid="stHorizontalBlock"] {
+    align-items: stretch;
+    gap: 8px;
+}
+
+.ss-compose-wrap div[data-testid="column"] {
+    display: flex;
+    align-items: stretch;
+}
+
+.ss-compose-wrap div[data-testid="column"] > div {
+    width: 100%;
+}
+
+/* Remove default Streamlit spacing that can push widgets out of line */
+.ss-compose-wrap div[data-testid="stTextInput"],
+.ss-compose-wrap div[data-testid="stFormSubmitButton"] {
+    margin-bottom: 0;
+}
+
+/* Match exact control heights */
+.ss-compose-wrap > div[data-testid="stTextInput"]:first-of-type div[data-baseweb="input"] {
+    height: 34px;
+}
+
+.ss-compose-wrap > div[data-testid="stTextInput"]:first-of-type input {
+    height: 34px;
+}
+
+.ss-compose-wrap > div[data-testid="stTextInput"]:first-of-type input::placeholder {
+    font-size: 13px;
+}
+
+.ss-compose-wrap div[data-testid="stTextInput"] div[data-baseweb="input"] {
+    height: 40px;
+}
+
+.ss-compose-wrap div[data-testid="stFormSubmitButton"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ss-compose-wrap div[data-testid="stFormSubmitButton"] button {
+    height: 40px;
+    margin: 0;
+    width: 100%;
+    padding-top: 0;
+    padding-bottom: 0;
+    align-self: center;
+}
+
+.ss-compose-wrap div[data-testid="stTextInput"] input {
+    height: 40px;
 }
 
 @media (max-width: 640px) {

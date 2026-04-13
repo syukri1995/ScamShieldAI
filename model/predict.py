@@ -26,7 +26,7 @@ def _heuristic_probability(text: str) -> float:
     signals = ["urgent", "verify", "winner", "click", "password", "bank", "gift card"]
     lowered = text.lower()
     score = sum(1 for s in signals if s in lowered)
-    return min(0.1 + score * 0.15, 0.95)
+    return min(0.03 + score * 0.08, 0.55)
 
 
 def _model_explanation(
@@ -58,9 +58,15 @@ def predict_text(text: str) -> dict[str, Any]:
         model_terms = []
 
     model_score = model_prob * 100.0
-    # Blend model score with deterministic rule-based signals.
+    # Blend with deterministic rules, but keep the trained model as the primary signal.
     rules = apply_rules(text)
-    final_score = max(0.0, min(100.0, model_score + rules["score_boost"]))
+    if model is not None and vectorizer is not None:
+        # Model-first scoring: rules are assistive only.
+        final_score = max(0.0, min(100.0, model_score + (rules["score_boost"] * 0.35)))
+    else:
+        # Heuristic fallback should stay conservative when model artifacts are missing.
+        fallback_boost = min(rules["score_boost"] * 0.2, 8.0)
+        final_score = max(0.0, min(100.0, model_score + fallback_boost))
 
     if final_score >= 70:
         label = "scam"
