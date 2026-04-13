@@ -1,6 +1,9 @@
 from pathlib import Path
-from services.risk_engine import process_scam_event, process_scam_events_batch, get_blocked_users
+
 from database.db import init_db
+from services.risk_engine import (get_blocked_users, process_scam_event,
+                                  process_scam_events_batch)
+
 
 def test_process_scam_event_single(tmp_path: Path):
     db_path = tmp_path / "test.db"
@@ -10,6 +13,7 @@ def test_process_scam_event_single(tmp_path: Path):
     assert res["scam_count"] == 1
     assert res["risk_score"] == 0.9
     assert res["status"] == "active"
+
 
 def test_process_scam_events_batch(tmp_path: Path):
     db_path = tmp_path / "test_batch.db"
@@ -30,6 +34,7 @@ def test_process_scam_events_batch(tmp_path: Path):
     assert user2_res["scam_count"] == 1
     assert user2_res["risk_score"] == 0.7
 
+
 def test_auto_block(tmp_path: Path):
     db_path = tmp_path / "test_block.db"
     init_db(db_path)
@@ -49,6 +54,7 @@ def test_auto_block(tmp_path: Path):
     assert len(blocked) == 1
     assert blocked[0]["user_id"] == "scammer"
     assert blocked[0]["status"] == "blocked"
+
 
 def test_already_blocked(tmp_path: Path):
     db_path = tmp_path / "test_blocked_already.db"
