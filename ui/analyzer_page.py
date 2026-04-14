@@ -171,7 +171,9 @@ def render() -> None:
         # Bottom composer-style input that triggers analysis.
         with st.form("analyzer_compose_form", clear_on_submit=True, border=False):
             st.markdown('<div class="ss-compose-wrap">', unsafe_allow_html=True)
-            st.markdown('<div class="ss-field-label">Sender</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="ss-field-label">Sender</div>', unsafe_allow_html=True
+            )
             st.text_input(
                 "Sender",
                 key=sender_key,

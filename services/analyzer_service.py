@@ -185,9 +185,7 @@ def analyze_and_store(
         from services.risk_engine import process_scam_event
 
         # Auto-block users who repeatedly send scams
-        process_scam_event(
-            sender_value, result["risk_score"] / 100.0, db_path=db_path
-        )
+        process_scam_event(sender_value, result["risk_score"] / 100.0, db_path=db_path)
     except Exception as e:
         # Silently fail if there's an issue with the new features to avoid breaking the core analyzer
         pass
