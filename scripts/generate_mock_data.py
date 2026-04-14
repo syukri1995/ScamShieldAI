@@ -33,7 +33,6 @@ def generate_mock_data():
             "link": "http://amazon-security-check.com/verify",
             "scam_score": 0.95,
         },
-        
         # === SCAMMER 2: bank_phish_kingpin (Banking & Finance Phishing) ===
         {
             "sender_id": "bank_phish_kingpin",
@@ -56,7 +55,6 @@ def generate_mock_data():
             "link": "https://paypa1-confirm-method.ru",
             "scam_score": 0.96,
         },
-        
         # === SCAMMER 3: romance_scammer_nova (Romance/Catfish) ===
         {
             "sender_id": "romance_scammer_nova",
@@ -72,7 +70,6 @@ def generate_mock_data():
             "link": "https://wu-transfer-service.tk/send",
             "scam_score": 0.93,
         },
-        
         # === SCAMMER 4: crypto_pump_dump (Cryptocurrency Pump & Dump) ===
         {
             "sender_id": "crypto_pump_dump",
@@ -95,7 +92,6 @@ def generate_mock_data():
             "link": "https://metamask-security-update.net/sync",
             "scam_score": 0.90,
         },
-        
         # === SCAMMER 5: tech_support_scammer (Tech Support / Microsoft Scam) ===
         {
             "sender_id": "tech_support_scammer",
@@ -111,7 +107,6 @@ def generate_mock_data():
             "link": "https://ms-antivirus-fix.ru/download",
             "scam_score": 0.94,
         },
-        
         # === SCAMMER 6: job_offer_scammer (Fake Job Offers) ===
         {
             "sender_id": "job_offer_scammer",
@@ -127,7 +122,6 @@ def generate_mock_data():
             "link": "https://google-recruit.ru/verify-cv",
             "scam_score": 0.88,
         },
-        
         # === SCAMMER 7: tax_refund_scammer (Tax/Government Impersonation) ===
         {
             "sender_id": "tax_refund_scammer",
@@ -143,7 +137,6 @@ def generate_mock_data():
             "link": "https://ss-verify-account.ru/secure-login",
             "scam_score": 0.95,
         },
-        
         # === LEGITIMATE USERS (for contrast) ===
         {
             "sender_id": "friend_john",
