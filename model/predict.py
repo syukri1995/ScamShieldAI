@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -12,8 +13,10 @@ MODEL_PATH = MODEL_DIR / "model.pkl"
 VECTORIZER_PATH = MODEL_DIR / "vectorizer.pkl"
 
 
+@lru_cache(maxsize=1)
 def _load_artifacts():
     # Load persisted model assets if training has been completed.
+    # Cached with lru_cache to avoid redundant disk I/O when making predictions.
     if MODEL_PATH.exists() and VECTORIZER_PATH.exists():
         model = joblib.load(MODEL_PATH)
         vectorizer = joblib.load(VECTORIZER_PATH)
