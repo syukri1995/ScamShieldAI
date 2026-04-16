@@ -11,12 +11,23 @@ MODEL_DIR = Path(__file__).resolve().parent
 MODEL_PATH = MODEL_DIR / "model.pkl"
 VECTORIZER_PATH = MODEL_DIR / "vectorizer.pkl"
 
+_MODEL_CACHE = None
+_VECTORIZER_CACHE = None
+
 
 def _load_artifacts():
+    global _MODEL_CACHE, _VECTORIZER_CACHE
+
+    # Return cached instances if already loaded
+    if _MODEL_CACHE is not None and _VECTORIZER_CACHE is not None:
+        return _MODEL_CACHE, _VECTORIZER_CACHE
+
     # Load persisted model assets if training has been completed.
     if MODEL_PATH.exists() and VECTORIZER_PATH.exists():
         model = joblib.load(MODEL_PATH)
         vectorizer = joblib.load(VECTORIZER_PATH)
+        _MODEL_CACHE = model
+        _VECTORIZER_CACHE = vectorizer
         return model, vectorizer
     return None, None
 
