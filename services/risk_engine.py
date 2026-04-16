@@ -59,7 +59,9 @@ def process_scam_events_batch(
                 )
 
             if state["status"] == "blocked":
-                results.append({"user_id": user_id, "status": "blocked", "action": "none"})
+                results.append(
+                    {"user_id": user_id, "status": "blocked", "action": "none"}
+                )
                 continue
 
             new_scam_count = state["scam_count"]
