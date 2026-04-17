@@ -156,9 +156,9 @@ def analyze_and_store(
     # Normally sender_id and receiver_id would come from the messaging context (e.g. Telegram),
     # but here we infer or use defaults since the standard UI only accepts input text.
     # Extract links from the text using a naive heuristic if any exist
-    import re
+    from model.rules import URL_PATTERN
 
-    urls = re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    urls = URL_PATTERN.findall(text.lower())
     extracted_link = ",".join(urls) if urls else ""
 
     try:
