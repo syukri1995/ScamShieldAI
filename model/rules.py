@@ -1,5 +1,7 @@
 import re
 
+URL_PATTERN = re.compile(r"https?://[^\s]+|www\.[^\s]+")
+
 SUSPICIOUS_KEYWORDS = {
     "urgent",
     "verify",
@@ -25,7 +27,7 @@ SUSPICIOUS_TLDS = (".xyz", ".top", ".work", ".click", ".info")
 
 def detect_urls(text: str) -> list[str]:
     # Capture common URL formats found in message text.
-    return re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    return URL_PATTERN.findall(text.lower())
 
 
 def apply_rules(text: str) -> dict:
