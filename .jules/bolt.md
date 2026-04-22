@@ -5,3 +5,7 @@
 ## 2024-05-18 - Optimize Pickled ML Model Loading with memory caching
 **Learning:** Pickling a scikit-learn model and loading it from disk via `joblib.load` at every request is highly inefficient and creates an IO bottleneck taking ~1.5s per prediction.
 **Action:** Use global variables to cache model and vectorizer loading into memory instead of reloading them on every call. Avoid `functools.lru_cache` since it would cache `(None, None)` if called before the model is fully trained, making it impossible to refresh the cache without restarting the server.
+
+## 2024-05-18 - Optimize Regular Expression Compilation
+**Learning:** Compiling regular expressions inline inside functions called repeatedly (such as `re.findall` or `re.search` inside loops) introduces measurable overhead due to Python's internal regex caching lookup.
+**Action:** Always pre-compile regular expressions at the module level using `re.compile()` for performance-sensitive string matching tasks to avoid per-function-call overhead.
