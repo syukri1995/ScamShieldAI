@@ -52,7 +52,7 @@ def render() -> None:
     if search_query.strip():
         filtered = filtered[
             filtered["input_text"].str.contains(
-                search_query.strip(), case=False, na=False
+                search_query.strip(), case=False, na=False, regex=False
             )
         ]
 
