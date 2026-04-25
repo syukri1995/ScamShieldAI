@@ -19,13 +19,18 @@ SUSPICIOUS_KEYWORDS = {
     "limited time",
 }
 
+# Pre-compile regex patterns for performance optimization
+URL_PATTERN = re.compile(r"https?://[^\s]+|www\.[^\s]+")
+IP_PATTERN = re.compile(r"https?://\d+\.\d+\.\d+\.\d+")
+SHORTENER_PATTERN = re.compile(r"(?:bit\.ly|tinyurl\.com|t\.co|rb\.gy)")
+
 URL_SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "rb.gy")
 SUSPICIOUS_TLDS = (".xyz", ".top", ".work", ".click", ".info")
 
 
 def detect_urls(text: str) -> list[str]:
     # Capture common URL formats found in message text.
-    return re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    return URL_PATTERN.findall(text.lower())
 
 
 def apply_rules(text: str) -> dict:
@@ -33,19 +38,19 @@ def apply_rules(text: str) -> dict:
     lowered = text.lower()
     matched_keywords = sorted([kw for kw in SUSPICIOUS_KEYWORDS if kw in lowered])
 
-    url_flags = []
+    url_flags = set()
     for url in detect_urls(text):
-        if any(shortener in url for shortener in URL_SHORTENERS):
-            url_flags.append("uses_url_shortener")
-        if re.search(r"https?://\d+\.\d+\.\d+\.\d+", url):
-            url_flags.append("ip_based_url")
-        if any(url.endswith(tld) for tld in SUSPICIOUS_TLDS):
-            url_flags.append("suspicious_tld")
+        if SHORTENER_PATTERN.search(url):
+            url_flags.add("uses_url_shortener")
+        if IP_PATTERN.search(url):
+            url_flags.add("ip_based_url")
+        if url.endswith(SUSPICIOUS_TLDS):
+            url_flags.add("suspicious_tld")
 
     boost = 0.0
     # Cap each signal family so scores stay bounded and interpretable.
     boost += min(len(matched_keywords) * 6.0, 30.0)
-    boost += min(len(set(url_flags)) * 9.0, 27.0)
+    boost += min(len(url_flags) * 9.0, 27.0)
 
     reasons = []
     if matched_keywords:
@@ -53,12 +58,12 @@ def apply_rules(text: str) -> dict:
             f"Suspicious keywords detected: {', '.join(matched_keywords[:6])}"
         )
     if url_flags:
-        reasons.append(f"URL warning signals: {', '.join(sorted(set(url_flags)))}")
+        reasons.append(f"URL warning signals: {', '.join(sorted(url_flags))}")
 
     # Return additive boost, matched terms, and human-readable reasons.
     return {
         "score_boost": boost,
         "matched_keywords": matched_keywords,
-        "url_flags": sorted(set(url_flags)),
+        "url_flags": sorted(url_flags),
         "rule_reasons": reasons,
     }
