@@ -5,3 +5,7 @@
 ## 2024-05-18 - Optimize Pickled ML Model Loading with memory caching
 **Learning:** Pickling a scikit-learn model and loading it from disk via `joblib.load` at every request is highly inefficient and creates an IO bottleneck taking ~1.5s per prediction.
 **Action:** Use global variables to cache model and vectorizer loading into memory instead of reloading them on every call. Avoid `functools.lru_cache` since it would cache `(None, None)` if called before the model is fully trained, making it impossible to refresh the cache without restarting the server.
+
+## 2024-05-18 - Optimize URL detection regex and deduplication
+**Learning:** Extracting URLs using `text.lower()` with a pre-compiled regex is significantly faster than using `re.IGNORECASE` flag and inline regex compilation in Python. Also using `set()` for unique flags is faster than `list.append` in a loop combined with `any()` calls and converting to sets.
+**Action:** Always pre-compile regex paths (`re.compile`) at module-level for hot paths, and use `set()` natively to collect flags instead of repeatedly appending to a list.

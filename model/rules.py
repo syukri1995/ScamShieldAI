@@ -22,10 +22,15 @@ SUSPICIOUS_KEYWORDS = {
 URL_SHORTENERS = ("bit.ly", "tinyurl.com", "t.co", "rb.gy")
 SUSPICIOUS_TLDS = (".xyz", ".top", ".work", ".click", ".info")
 
+# Pre-compile regex patterns for performance
+URL_REGEX = re.compile(r"https?://[^\s]+|www\.[^\s]+")
+IP_REGEX = re.compile(r"https?://\d+\.\d+\.\d+\.\d+")
+URL_SHORTENERS_REGEX = re.compile(r"(?:" + "|".join(map(re.escape, URL_SHORTENERS)) + ")")
+SUSPICIOUS_TLDS_REGEX = re.compile(r"(?:" + "|".join(map(re.escape, SUSPICIOUS_TLDS)) + r")$")
 
 def detect_urls(text: str) -> list[str]:
     # Capture common URL formats found in message text.
-    return re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    return URL_REGEX.findall(text.lower())
 
 
 def apply_rules(text: str) -> dict:
@@ -33,19 +38,19 @@ def apply_rules(text: str) -> dict:
     lowered = text.lower()
     matched_keywords = sorted([kw for kw in SUSPICIOUS_KEYWORDS if kw in lowered])
 
-    url_flags = []
+    url_flags = set()
     for url in detect_urls(text):
-        if any(shortener in url for shortener in URL_SHORTENERS):
-            url_flags.append("uses_url_shortener")
-        if re.search(r"https?://\d+\.\d+\.\d+\.\d+", url):
-            url_flags.append("ip_based_url")
-        if any(url.endswith(tld) for tld in SUSPICIOUS_TLDS):
-            url_flags.append("suspicious_tld")
+        if URL_SHORTENERS_REGEX.search(url):
+            url_flags.add("uses_url_shortener")
+        if IP_REGEX.search(url):
+            url_flags.add("ip_based_url")
+        if SUSPICIOUS_TLDS_REGEX.search(url):
+            url_flags.add("suspicious_tld")
 
     boost = 0.0
     # Cap each signal family so scores stay bounded and interpretable.
     boost += min(len(matched_keywords) * 6.0, 30.0)
-    boost += min(len(set(url_flags)) * 9.0, 27.0)
+    boost += min(len(url_flags) * 9.0, 27.0)
 
     reasons = []
     if matched_keywords:
