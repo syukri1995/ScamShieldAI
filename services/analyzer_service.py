@@ -1,10 +1,14 @@
 import os
+import re
 from importlib import import_module
 from pathlib import Path
 from typing import Any
 
 from database.db import insert_scan
 from model.predict import predict_text
+
+# Pre-compiled regex patterns for performance
+URL_PATTERN = re.compile(r"https?://[^\s]+|www\.[^\s]+")
 
 SCAM_LIKE_LABELS = {"suspicious", "scam"}
 OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
@@ -156,9 +160,8 @@ def analyze_and_store(
     # Normally sender_id and receiver_id would come from the messaging context (e.g. Telegram),
     # but here we infer or use defaults since the standard UI only accepts input text.
     # Extract links from the text using a naive heuristic if any exist
-    import re
 
-    urls = re.findall(r"https?://[^\s]+|www\.[^\s]+", text.lower())
+    urls = URL_PATTERN.findall(text.lower())
     extracted_link = ",".join(urls) if urls else ""
 
     try:
